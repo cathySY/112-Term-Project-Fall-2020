@@ -1,4 +1,6 @@
-#COLORS 
+#COLORS       
+'''
+https://academy.cs.cmu.edu/docs#colors
 for notes: 'cornSilk' 'blanchedAlmond' 'bisque' 'navajoWhite' 'wheat'
 for bg: rgbString(10, 40, 130)
 colorList = # pastel colors
@@ -12,7 +14,7 @@ colorList = # pastel colors
              #for n in [0,1,4,6] draws a pattern that vaguely 
                 #resembles a pokeball! cool.
 
-            '''
+      
             textLength = len(app.letterPosition)
             spacing = 10
             if event.key in 'mwMW':
@@ -40,7 +42,7 @@ colorList = # pastel colors
                 app.letterPosition += 10
                 '''
 
-    '''
+'''
     if app.dayEntry == '':
         textX = x1*2 + 10
     elif app.dayEntry[-1] in 'mwMW':
@@ -49,6 +51,62 @@ colorList = # pastel colors
         textX = x1*2 + len(app.dayEntry)*4.5
     else:
         textX = x1*2 + len(app.dayEntry)*5.6
-    '''
+'''
 
-inspect.getargspec(canvas.create_arc)
+happyWords = ['''cheerful
+contented
+delighted
+ecstatic
+elated
+glad
+joyful
+joyous
+jubilant
+lively
+merry
+overjoyed
+peaceful
+pleasant
+pleased
+thrilled
+upbeat
+blessed
+blest
+blissful
+blithe
+can't complain
+captivated
+chipper
+chirpy
+content
+convivial
+exultant
+flying high
+gay
+gleeful
+gratified
+intoxicated
+jolly
+laughing
+light
+looking good
+mirthful
+on cloud nine
+peppy
+perky
+playful
+sparkling
+sunny
+tickled
+tickled pink
+up
+walking on air
+''']
+
+def helper(lst):
+    newList = ''
+    for word in lst:
+        newList += word
+    return newList
+
+finalList = helper(happyWords)
