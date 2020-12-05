@@ -344,5 +344,5 @@ def redrawAll(app, canvas):
         drawYearMode(app, canvas)
 
 
-runApp(width=1420, height=800)
+runApp(width=1400, height=800)
 
