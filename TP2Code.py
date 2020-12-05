@@ -60,6 +60,59 @@ def appStarted(app):
     ### Circle
     app.hDistCovered = 0
     app.hR, app.hFrameCircum = app.height/2, app.width
+    app.hTotalCircum = 2*math.pi*app.hR*10
+    app.hTotalArea = math.pi * (app.hR)**2
+    ###
+    app.cxSun, app.cySun, app.rSun = (app.width/2, 
+                                app.height/2, app.width/10)
+    app.dMove = 150
+    app.dragging = False
+    app.getX = 0
+    app.getY = 0
+    app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4 = (
+                        app.width/2 - 40,
+                        app.height/2+2.5, 
+                        app.width/5,
+                        app.height, 
+                        app.width - app.width/5, 
+                        app.height,
+                        app.width/2 + 40, 
+                        app.height/2+2.5)
+    app.bx1,app.by1,app.bx2,app.by2,app.bx3,app.by3,app.bx4,app.by4 = (
+                        -app.width*3, #x
+                        app.height/2+2.5, 
+                        -430, #x
+                        app.height, 
+                        -430 + app.width*3/5, #x
+                        app.height,
+                        -app.width*3 + 80, #x
+                        app.height/2+2.5)
+    app.povLeft = app.width
+    app.backPath = False
+
+
+def resetAll(app):
+    app.mode = 'main'
+    app.dayEntry = ['']
+    app.maxLineLength = 100
+    app.letterPosition = [app.height/8*2 + 20]
+    app.textY = (app.height/8)*2 - app.height/50
+    app.lineY = (app.height/8)*2
+    app.lineMoveCount = 0
+    app.dLine = 5
+    app.moveTextAndLine = False
+    app.textDict = {}
+    app.yearChartX, app.yearChartY = app.width/5, app.height/3
+    #from CMU course notes about drawing a grid:
+    #https://www.cs.cmu.edu/~112/notes/notes-animations-part1.html#exampleGrids
+    #I modified the parameters
+    app.rows = 3
+    app.cols = 4
+    app.margin = 100 # margin around grid
+    app.selection = (-1, -1) # (row, col) of selection, (-1,-1) for none
+    ### Circle
+    app.hDistCovered = 0
+    app.hR, app.hFrameCircum = app.height/2, app.width
     app.hTotalCircum = 2*math.pi*app.hR*8
     app.hTotalArea = math.pi * (app.hR)**2
     ###
@@ -89,58 +142,6 @@ def appStarted(app):
                         app.height/2+2.5)
     app.povLeft = app.width
     app.backPath = False
-
-
-def resetAll(app):
-    app.mode = 'main'
-    app.dayEntry = ['']
-    app.maxLineLength = 100
-    app.letterPosition = [app.height/8*2 + 20]
-    app.textY = (app.height/8)*2 - app.height/50
-    app.lineY = (app.height/8)*2
-    app.lineMoveCount = 0
-    app.dLine = 5
-    app.moveTextAndLine = False
-    app.textDict = {}
-    app.yearChartX, app.yearChartY = app.width/5, app.height/3
-    #from CMU course notes about drawing a grid:
-    #https://www.cs.cmu.edu/~112/notes/notes-animations-part1.html#exampleGrids
-    #I modified the parameters
-    app.rows = 3
-    app.cols = 4
-    app.margin = 100 # margin around grid
-    app.selection = (-1, -1) # (row, col) of selection, (-1,-1) for none
-    ### Circle
-    app.hDistCovered = 0
-    app.hR, app.hFrameCircum = app.height/2, app.width
-    app.hTotalCircum = 2*math.pi*app.hR
-    app.hTotalArea = math.pi * (app.hR)**2
-    ###
-    app.cxSun, app.cySun, app.rSun = (app.width/2, 
-                                app.height/2, app.width/10)
-    app.dMove = 150
-    app.dragging = False
-    app.getX = 0
-    app.getY = 0
-    app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4 = (
-                        app.width/2 - 40,
-                        app.height/2+2.5, 
-                        app.width/5,
-                        app.height, 
-                        app.width - app.width/5, 
-                        app.height,
-                        app.width/2 + 40, 
-                        app.height/2+2.5)
-    app.bx1,app.by1,app.bx2,app.by2,app.bx3,app.by3,app.bx4,app.by4 = (
-                        -app.width,
-                        app.height/2+2.5, 
-                        app.width/5,
-                        app.height, 
-                        -app.width - app.width/5, 
-                        app.height,
-                        app.width/2 + 40, 
-                        app.height/2+2.5)
-
 
 def keyPressed(app, event):
     if event.key == 'Tab':
@@ -210,52 +211,59 @@ def mouseDragged(app, event):
     #how much the cursor is dragged in x-direction
     #positive or negative
     xdiff = app.getX - event.x
-    #first quadrant:
     app.povLeft -= xdiff
-    if (app.povLeft <= app.width and 
-                app.povLeft > app.width - app.hTotalCircum/4):
-        if event.x <= app.getX:
-            #position of sun
-            app.cxSun += xdiff
-            app.cxSun %= app.hTotalCircum
+    #first quadrant:
+    #app.povLeft %= app.hTotalCircum
+    if ((app.povLeft <= app.width and 
+                app.povLeft > app.width - app.hTotalCircum/4) 
+                or 
+                (app.povLeft <= app.width - app.hTotalCircum*3/4 and 
+                app.povLeft > app.width - app.hTotalCircum)):
+        app.backPath = False
+        app.cxSun += xdiff
+        #app.cxSun %= app.hTotalCircum
         #TRAPEZIUM OF PATH
             #shift angles
-            app.x1 += xdiff
-            app.x4 += xdiff
-            app.x1 %= app.hTotalCircum
-            app.x4 %= app.hTotalCircum
+        app.x1 += xdiff
+        app.x4 += xdiff
+            #app.x1 %= app.hTotalCircum
+            #app.x4 %= app.hTotalCircum
             #shift x
-            if (app.povLeft < app.width - app.hTotalCircum/5 and 
-                    app.povLeft > app.width - app.hTotalCircum/4.5):
-                app.x2 += xdiff
-                app.x3 += xdiff
-            app.x2 += xdiff*1/8
-            app.x3 += xdiff*1/8
-            app.x2 %= app.hTotalCircum
-            app.x3 %= app.hTotalCircum
+        if (app.povLeft < app.width - app.hTotalCircum/5 and 
+                app.povLeft > app.width - app.hTotalCircum/4):
+            app.x2 += xdiff*5
+            app.x3 += xdiff*5
+        app.x2 += xdiff*1/7
+        app.x3 += xdiff*1/7
+            #app.x2 %= app.hTotalCircum
+            #app.x3 %= app.hTotalCircum
     #second quadrant 
     elif (app.povLeft <= app.width - app.hTotalCircum/4 and 
-                app.povLeft > app.width - app.hTotalCircum/2):
+                app.povLeft > app.width - app.hTotalCircum*3/4):
         app.backPath = True
-        if event.x <= app.getX:
-            #position of sun
-            app.cxSun = -500
-            app.cxSun = -500
+        app.cxSun += xdiff
         #TRAPEZIUM OF PATH
             #shift angles
-            app.bx1 += xdiff
-            app.bx4 += xdiff
-            app.bx1 %= app.hTotalCircum
-            app.bx4 %= app.hTotalCircum
+        app.bx1 += xdiff
+        app.bx4 += xdiff
+            #app.bx1 %= app.hTotalCircum
+            #app.bx4 %= app.hTotalCircum
             #shift x
-            if (app.povLeft < app.width - app.hTotalCircum/5 and 
+        if (app.povLeft < app.width - app.hTotalCircum*0.6 and 
+                    app.povLeft > app.width - app.hTotalCircum*3/4):
+                app.bx2 += xdiff*5
+                app.bx3 += xdiff*5
+        elif (app.povLeft <= app.width - app.hTotalCircum/4 and 
                     app.povLeft > app.width - app.hTotalCircum/4.5):
-                app.bx2 += xdiff*2/3
-                app.bx3 += xdiff*2/3
-            app.bx2 += xdiff*1/8
-            app.bx3 += xdiff*1/8
-            app.bx2 %= app.hTotalCircum
-            app.bx3 %= app.hTotalCircum
+                app.bx2 += xdiff*5
+                app.bx3 += xdiff*5
+        app.bx2 += xdiff*1/7
+        app.bx3 += xdiff*1/7
+            #app.bx2 %= app.hTotalCircum
+            #app.bx3 %= app.hTotalCircum
+    #elif (app.povLeft <= app.width - app.hTotalCircum/4 and 
+                #app.povLeft > app.width - app.hTotalCircum*3/4):
+        #app.backPath = False
 '''
     else:
         app.x1 -= app.dMove
@@ -409,7 +417,8 @@ def drawYearChart(app, canvas):
 
 def drawHorizonAndSun(app, canvas):
     drawHorizon(app, canvas)
-    drawSun(app, canvas)
+    if app.backPath == False:
+        drawSun(app, canvas)
 
 def drawHorizon(app, canvas):
     #DRAW SKY and LAND
