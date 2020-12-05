@@ -13,6 +13,7 @@ import math, copy, random, string
 from Usefulwords import *
 from EntryAnalysis import *
 #from perspective import *
+#import perspective 
 import EntryAnalysis
 import Usefulwords
 
@@ -56,9 +57,94 @@ def appStarted(app):
     app.cols = 4
     app.margin = 100 # margin around grid
     app.selection = (-1, -1) # (row, col) of selection, (-1,-1) for none
-    app.cx, app.cy, app.r = app.width/2, app.height/2, app.width/10
+    ### Circle
+    app.hDistCovered = 0
+    app.hR, app.hFrameCircum = app.height/2, app.width
+    app.hTotalCircum = 2*math.pi*app.hR*8
+    app.hTotalArea = math.pi * (app.hR)**2
+    ###
+    app.cxSun, app.cySun, app.rSun = (app.width/2, 
+                                app.height/2, app.width/10)
+    app.dMove = 150
+    app.dragging = False
+    app.getX = 0
+    app.getY = 0
+    app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4 = (
+                        app.width/2 - 40,
+                        app.height/2+2.5, 
+                        app.width/5,
+                        app.height, 
+                        app.width - app.width/5, 
+                        app.height,
+                        app.width/2 + 40, 
+                        app.height/2+2.5)
+    app.bx1,app.by1,app.bx2,app.by2,app.bx3,app.by3,app.bx4,app.by4 = (
+                        -app.width,
+                        app.height/2+2.5, 
+                        app.width/5,
+                        app.height, 
+                        app.width - app.width/5, 
+                        app.height,
+                        -app.width + 80, 
+                        app.height/2+2.5)
+    app.povLeft = app.width
+    app.backPath = False
+
+
+def resetAll(app):
+    app.mode = 'main'
+    app.dayEntry = ['']
+    app.maxLineLength = 100
+    app.letterPosition = [app.height/8*2 + 20]
+    app.textY = (app.height/8)*2 - app.height/50
+    app.lineY = (app.height/8)*2
+    app.lineMoveCount = 0
+    app.dLine = 5
+    app.moveTextAndLine = False
+    app.textDict = {}
+    app.yearChartX, app.yearChartY = app.width/5, app.height/3
+    #from CMU course notes about drawing a grid:
+    #https://www.cs.cmu.edu/~112/notes/notes-animations-part1.html#exampleGrids
+    #I modified the parameters
+    app.rows = 3
+    app.cols = 4
+    app.margin = 100 # margin around grid
+    app.selection = (-1, -1) # (row, col) of selection, (-1,-1) for none
+    ### Circle
+    app.hDistCovered = 0
+    app.hR, app.hFrameCircum = app.height/2, app.width
+    app.hTotalCircum = 2*math.pi*app.hR
+    app.hTotalArea = math.pi * (app.hR)**2
+    ###
+    app.cxSun, app.cySun, app.rSun = (app.width/2, 
+                                app.height/2, app.width/10)
+    app.dMove = 150
+    app.dragging = False
+    app.getX = 0
+    app.getY = 0
+    app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4 = (
+                        app.width/2 - 40,
+                        app.height/2+2.5, 
+                        app.width/5,
+                        app.height, 
+                        app.width - app.width/5, 
+                        app.height,
+                        app.width/2 + 40, 
+                        app.height/2+2.5)
+    app.bx1,app.by1,app.bx2,app.by2,app.bx3,app.by3,app.bx4,app.by4 = (
+                        -app.width,
+                        app.height/2+2.5, 
+                        app.width/5,
+                        app.height, 
+                        -app.width - app.width/5, 
+                        app.height,
+                        app.width/2 + 40, 
+                        app.height/2+2.5)
+
 
 def keyPressed(app, event):
+    if event.key == 'Tab':
+        resetAll(app)
     if app.mode == 'main':
         #enter year mode
         if event.key == 'Enter':
@@ -114,8 +200,112 @@ def timerFired(app):
     #if app.mode == 'weekly summary':
         #oneDayMoodAnalysis(app,today)
 
+def mouseDragged(app, event):
+    app.dragging = True
+    '''
+    if app.cxSun == app.width/2 + app.hTotalCircum/4:
+        app.x1,app.y1,app.x2,app.y2 = -1,-1,-1,-1
+        print(app.cxSun)
+        '''
+    #how much the cursor is dragged in x-direction
+    #positive or negative
+    xdiff = app.getX - event.x
+    #first quadrant:
+    app.povLeft -= xdiff
+    if (app.povLeft <= app.width and 
+                app.povLeft > app.width - app.hTotalCircum/4):
+        if event.x <= app.getX:
+            #position of sun
+            app.cxSun += xdiff
+            app.cxSun %= app.hTotalCircum
+        #TRAPEZIUM OF PATH
+            #shift angles
+            app.x1 += xdiff
+            app.x4 += xdiff
+            app.x1 %= app.hTotalCircum
+            app.x4 %= app.hTotalCircum
+            #shift x
+            if (app.povLeft < app.width - app.hTotalCircum/5 and 
+                    app.povLeft > app.width - app.hTotalCircum/4.5):
+                app.x2 += xdiff
+                app.x3 += xdiff
+            app.x2 += xdiff*1/8
+            app.x3 += xdiff*1/8
+            app.x2 %= app.hTotalCircum
+            app.x3 %= app.hTotalCircum
+    #second quadrant 
+    elif (app.povLeft <= app.width - app.hTotalCircum/4 and 
+                app.povLeft > app.width - app.hTotalCircum/2):
+        app.backPath = True
+        if event.x <= app.getX:
+            #position of sun
+            app.cxSun = -500
+            app.cxSun = -500
+        #TRAPEZIUM OF PATH
+            #shift angles
+            app.bx1 += xdiff
+            app.bx4 += xdiff
+            app.bx1 %= app.hTotalCircum
+            app.bx4 %= app.hTotalCircum
+            #shift x
+            if (app.povLeft < app.width - app.hTotalCircum/5 and 
+                    app.povLeft > app.width - app.hTotalCircum/4.5):
+                app.bx2 += xdiff*2/3
+                app.bx3 += xdiff*2/3
+            app.bx2 += xdiff*1/8
+            app.bx3 += xdiff*1/8
+            app.bx2 %= app.hTotalCircum
+            app.bx3 %= app.hTotalCircum
+'''
+    else:
+        app.x1 -= app.dMove
+        app.x4 -= app.dMove
+        #app.x2 -= app.dMove*4/5
+        #app.x3 -= app.dMove*4/5
+        app.x1 %= app.hTotalCircum
+        app.x4 %= app.hTotalCircum
+        #app.x2 %= app.hTotalCircum
+        #app.x3 %= app.hTotalCircum
+        
+        app.cxSun -= app.dMove
+        app.cxSun %= app.hTotalCircum
+    #if event.x = app.width/2:
+        #indication that this is the centre
+    '''
+'''
+        if app.cxSun > app.width/2:
+            app.rSun -= 6
+        else: 
+            app.rSun += 6
+        #length of end of path
+        if app.cxSun < app.width/2:
+            app.x1 -= 5
+            app.x4 += 5
+        else: 
+            app.x1 += 5
+            app.x4 -= 5
+
+        if app.cxSun < app.width/2:
+            app.rSun -= 6
+        else: 
+            app.rSun += 6
+
+        if app.cxSun > app.width/2:
+            app.x1 -= 5
+            app.x4 += 5
+        else: 
+            app.x1 += 5
+            app.x4 -= 5
+            '''
+
+def mouseReleased(app,event):
+    if app.dragging == False:
+        return
+    app.dragging = False
+
 def mousePressed(app, event):
-    print(event.x,event.y)
+    app.getX = event.x
+    app.getY = event.y
     if app.mode == 'day':
         if (0 < event.x < app.height/8) and (0 < event.y < app.height/8):
             app.mode = 'weekly summary'
@@ -195,6 +385,8 @@ def drawDefaultDayText(app, canvas):
 def drawMainMode(app, canvas):
     drawHorizonAndSun(app, canvas)
     drawPath(app, canvas)
+    if app.backPath == True:
+        drawBackPath(app,canvas)
     drawTrees(app, canvas)
     drawYearChart(app, canvas)
 
@@ -209,14 +401,17 @@ def drawYearChart(app, canvas):
     for row in range(app.rows):
         for col in range(app.cols):
             (x0, y0, x1, y1) = getCellBounds(app, row, col)
-            fill = "cyan" if (app.selection == (row, col)) else "white"
+            fill = "white" if (app.selection == (row, col)) else "white"
             #fill = 'white'
             canvas.create_rectangle(x0, y0, x1, y1, fill=fill)
     #canvas.create_text(app.width/2, app.height/2 - 15, text="Click in cells!",
                        #font="Arial 26 bold", fill="darkBlue")
 
-
 def drawHorizonAndSun(app, canvas):
+    drawHorizon(app, canvas)
+    drawSun(app, canvas)
+
+def drawHorizon(app, canvas):
     #DRAW SKY and LAND
     canvas.create_rectangle(0, 0, app.width, app.height/2, 
                                     fill = rgbString(255, 185, 30))
@@ -226,15 +421,14 @@ def drawHorizonAndSun(app, canvas):
     #DRAW HORIZON
     canvas.create_line(0, app.height/2, app.width, app.height/2, 
                         width = 5, fill = 'orangeRed')
-    #DRAW SUN
+
+def drawSun(app, canvas):
         #think of some cool designs!
         #remember to draw shadows for objects on land - to increase realism
         #Add flying birds too! just black birds flapping across the horizon 
         #in the distance
-    m1, m2 = 10, 45
-    cx, cy, r = app.cx, app.cy, app.r
-    #app.width/2, app.height/2, app.width/10
-
+    m1, m2 = app.rSun/16, app.rSun/3.5
+    cx, cy, r = app.cxSun, app.cySun, app.rSun
     canvas.create_arc(cx-r-m2, cy-r-m2, cx+r+m2, cy+r+m2, start=0, 
                                 extent=180, fill='darkOrange', 
                                 outline = 'darkOrange')     
@@ -263,11 +457,16 @@ def drawPath(app, canvas):
     #right side
     #canvas.create_line(app.width/2 + 10, app.height/2+2.5, app.width - 
                         #app.width/3.5, app.height, width = 5, smooth = False)
+    x1,y1,x2,y2,x3,y3,x4,y4 = (app.x1,app.y1,app.x2,
+                         app.y2,app.x3,app.y3,app.x4,app.y4)
+    canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'peru')
 
-    canvas.create_polygon(app.width/2 - 10, app.height/2+2.5, app.width/3.5,
-                        app.height, app.width - app.width/3.5, app.height,
-                        app.width/2 + 10, app.height/2+2.5, 
-                        fill = 'peru')
+
+def drawBackPath(app,canvas):
+    x1,y1,x2,y2,x3,y3,x4,y4 = (app.bx1,app.by1,app.bx2,app.by2,app.bx3,
+                            app.by3,app.bx4,app.by4)
+    canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'peru')
+
 
 
 def drawWeeklySummaryButton(app, canvas):
@@ -275,7 +474,7 @@ def drawWeeklySummaryButton(app, canvas):
 
 #idea inspired by Wordle: http://www.wordle.net/create
 #idea was brought up in meeting with TP mentor (Elena)
- 
+
 
 
 def drawTrees(app,canvas):
@@ -344,5 +543,4 @@ def redrawAll(app, canvas):
         drawYearMode(app, canvas)
 
 
-runApp(width=1420, height=800)
-
+runApp(width=1400, height=800)
