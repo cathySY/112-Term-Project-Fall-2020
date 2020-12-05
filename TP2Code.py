@@ -40,7 +40,7 @@ def make2dList(rows, cols, string):
 
 def appStarted(app):
     app.mode = 'weekly summary'
-    app.dayEntry = ['']
+    app.dayEntry = ['happy sad angry']
     app.maxLineLength = 100
     app.letterPosition = [app.height/8*2 + 20]
     app.textY = (app.height/8)*2 - app.height/50
@@ -212,7 +212,8 @@ def timerFired(app):
             app.yearChartX -= 50
             app.yearChartY -= 25
     if app.mode == 'weekly summary':
-        oneDayMoodAnalysis(app,today)
+        pass
+        #oneDayMoodAnalysis(app,today)
 
 def mouseDragged(app, event):
     app.dragging = True
@@ -579,15 +580,52 @@ def getCellBounds(app, row, col):
     y1 = app.margin + (row+1) * cellHeight
     return (x0, y0, x1, y1)
 
-today = daysOfWeek()
+'''
+class daysOfWeek(object):
+    def __init__(self):
+        self.happy = 0 
+        self.sad = 0
+        self.angry = 0
+    def addHappyWord(self):
+        self.happy += 1
+        return
+    def addSadWord(self):
+        self.sad += 1
+        return
+    def addAngryWord(self):
+        self.angry += 1
+        return
+    def printAnalysis(self):
+        return (f'# of happy words = {self.happy} \n # of sad words = {self.sad} \n # of angry words = {self.angry}')
+
+
+def oneDayMoodAnalysis(app,day):
+    entry = app.dayEntry[0].split()
+    print(entry)
+    for word in entry:
+        if word != '':
+            if word in happyWords:
+                day.addHappyWord()
+            elif word in sadWords:
+                day.addSadWord()
+            elif word in angryWords:
+                day.addAngryWord()
+        #entry.remove(word)
+            
+
+def drawWeeklyAnalysisText(app,canvas,day):
+    text = day.printAnalysis()
+    canvas.create_text(app.width/2, app.height/2, text = text, font = 'Arial 40 bold')
+
 def drawWeeklySummary(app, canvas):
+    today = daysOfWeek()
     margin = app.height/8
     popupColor = 'mintCream'
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     #draw popup
     canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor)
-    oneDayMoodAnalysis(app,today)
     drawWeeklyAnalysisText(app,canvas,today)
+    '''
 
 def redrawAll(app, canvas):
     if app.mode == 'day':

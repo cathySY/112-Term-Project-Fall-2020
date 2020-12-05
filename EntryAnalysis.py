@@ -1,4 +1,5 @@
 from Usefulwords import *
+from TP2Code import *
 
 class daysOfWeek(object):
     def __init__(self):
@@ -29,8 +30,8 @@ Sunday = daysOfWeek()
 
 def oneDayMoodAnalysis(app,day):
     entry = app.dayEntry[0].split()
+    
     for word in entry:
-        print(word)
         if word != '':
             if word in happyWords:
                 day.addHappyWord()
@@ -46,3 +47,13 @@ def drawWeeklyAnalysisText(app,canvas,day):
     text = day.printAnalysis()
     canvas.create_text(app.width/2, app.height/2, text = text, font = 'Arial 40 bold')
 
+
+def drawWeeklySummary(app, canvas):
+    today = daysOfWeek()
+    margin = app.height/8
+    popupColor = 'mintCream'
+    x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
+    #draw popup
+    canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor)
+    oneDayMoodAnalysis(app,today)
+    drawWeeklyAnalysisText(app,canvas,today)
