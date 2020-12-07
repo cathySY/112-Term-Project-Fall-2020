@@ -20,38 +20,19 @@ class dayMoods(object):
         return (f'# of happy words = {self.happy} \n # of sad words = {self.sad} \n # of angry words = {self.angry}')
     def addDayEntry(self, dayEntry):
         self.dayEntry = dayEntry
-    
-    def dictWordFrequency(self):
-        pass
 
-
-'''
-Monday = daysOfWeek()
-Tuesday = daysOfWeek()
-Wednesday = daysOfWeek()
-Thursday = daysOfWeek()
-Friday = daysOfWeek()
-Saturday = daysOfWeek()
-Sunday = daysOfWeek()
-'''
-
-def oneDayMoodAnalysis(app,file):
-    words = file.split()
+def oneDayMoodAnalysis(app,day):
+    words = app.dayEntry[0].split()
     for word in words:
         if word != '':
+            print(word)
             if word in happyWords:
+                print('happy')
                 day.addHappyWord()
             elif word in sadWords:
                 day.addSadWord()
             elif word in angryWords:
                 day.addAngryWord()
-
-'''
-today = entryMoodFrequency()
-dayEntry = [' angry sad sad ']
-oneDayMoodAnalysis(today,dayEntry)
-print (today.printAnalysis())
-'''
 
 #todayDate = datetime.datetime.now().date()
 #print(todayDate)
@@ -83,16 +64,19 @@ def drawWeeklyAnalysisText(app,canvas,day):
     text = day.printAnalysis()
     canvas.create_text(app.width/2, app.height/2, text = text, font = 'Arial 40 bold')
 
-currentDay = dayMoods()
-
 def drawWeeklySummary(app, canvas):
+    today = dayMoods()
     margin = app.height/8
     popupColor = 'mintCream'
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     #draw popup
     canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor)
-    oneDayMoodAnalysis(app,app.fileContents)
-    drawWeeklyAnalysisText(app,canvas,currentDay)
+    oneDayMoodAnalysis(app,today)
+    drawWeeklyAnalysisText(app,canvas,today)
+
+
 
 #print(str(datetime.datetime.now().date()))
 #print(str(datetime.datetime.now().date()))
+
+

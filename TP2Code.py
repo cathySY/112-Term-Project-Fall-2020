@@ -193,8 +193,8 @@ def keyPressed(app, event):
         #enter main mode
         if event.key == 'Enter':
             app.mode = 'main'
-            contents = listToString(app,app.fileContents)
-            writeFile(f'Entries/{app.currentDay}-text.txt',contents)
+            saveFile(app)
+            #print(readFile('Entries/2020-12-07-text.txt'))
             #weekEntries[app.index] = app.dayEntry
             #print(weekEntries)
         #if current text string is too long/exceeds length of underline
@@ -211,9 +211,12 @@ def keyPressed(app, event):
             else:
                 app.dayEntry[-1] += ' '
         elif event.key == 'Delete':
-            if app.dayEntry[-1] == '':
-                app.dayEntry[-2] = app.dayEntry[-2][:-1]
-            app.dayEntry[-1] = app.dayEntry[-1][:-1]
+            if app.dayEntry[0] == '':
+                pass
+            else:
+                if app.dayEntry[-1] == '':
+                    app.dayEntry[-2] = app.dayEntry[-2][:-1]
+                app.dayEntry[-1] = app.dayEntry[-1][:-1]
         elif event.key in string.printable:
             if len(app.dayEntry) >= 2:
                 if len(app.dayEntry[-2]) < app.maxLineLength:
@@ -237,6 +240,10 @@ def drawWeeklyAnalysisText(app,canvas,day):
     text = day.printAnalysis()
     canvas.create_text(app.width/2, app.height/2, text = text)
     '''
+
+def saveFile(app):
+    contents = listToString(app,app.dayEntry)
+    writeFile(f'Entries/{app.currentDay}-text.txt',contents)
 
 def timerFired(app):
     #moves text and line downwards at the same pace until a new line is reached
