@@ -44,12 +44,13 @@ def make2dList(rows, cols, string):
     return [ ([emptyColor] * cols) for row in range(rows) ]
 
 def appStarted(app):
-    app.mode = 'day'
+    app.mode = 'weekly summary'
     app.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday']
     app.weekDates = getWeek()
     #app.weekDates = createDayObjectsInWeek()
     app.currentDay = str(datetime.datetime.now().date())
+    app.currentDayName = calendar.day_name[datetime.datetime.now().date().weekday()]
     app.index = app.weekDates.index(app.currentDay)
     #print(f'{app.currentDay}-text.txt')
     app.maxLineLength = 20
@@ -207,7 +208,7 @@ def keyPressed(app, event):
     elif app.mode == 'day':
         #enter main mode
         if event.key == 'Enter':
-            app.timeLastSaved[app.index] = datetime.datetime.now().time()
+            app.timeLastSaved[app.index] = app.currentDay + ' ' + str(datetime.datetime.now().time())[:5]
             app.mode = 'main'
             saveFile(app)
             #print(readFile('Entries/2020-12-07-text.txt'))
@@ -482,10 +483,10 @@ def drawDefaultDayText(app, canvas):
     textColor = 'black'
     margin = app.height/8
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
-    canvas.create_text(margin + 200, margin + 30, 
-                            text = f"Today's date: {app.currentDay}", 
+    canvas.create_text(margin + 240, margin + 30, 
+                            text = f"Entry date: {app.currentDayName}, {app.currentDay}", 
                             font = 'Arial 30 bold', fill = textColor)
-    canvas.create_text(margin + 180, margin + 60, text = f'Time last saved: {app.timeLastSaved[app.index]}', 
+    canvas.create_text(margin + 170, margin + 60, text = f'Time last saved: {app.timeLastSaved[app.index]}', 
                             font = 'Arial 20', fill = textColor)
     #canvas.create_text(margin + 500, margin + 20, 
                             #text = 'How was your day today?', 

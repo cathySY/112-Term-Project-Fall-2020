@@ -33,12 +33,11 @@ def oneDayMoodAnalysis(app,day):
     for word in words:
         if word != '':
             print(word)
-            if word in happyWords:
-                print('happy')
+            if (word in happyWords) or (word[:-1] in happyWords):
                 day.addHappyWord()
-            elif word in sadWords:
+            elif (word in sadWords) or (word[:-1] in sadWords):
                 day.addSadWord()
-            elif word in angryWords:
+            elif (word in angryWords) or (word[:-1] in angryWords):
                 day.addAngryWord()
 
 #todayDate = datetime.datetime.now().date()
@@ -72,14 +71,15 @@ def drawWeeklyAnalysisText(app,canvas,day):
     canvas.create_text(app.width/2, app.height/2, text = text, font = 'Arial 40 bold')
 
 def drawWeeklySummary(app, canvas):
-    today = dayMoods()
+    for day in app.dayNames:
+        day = dayMoods()
+    oneDayMoodAnalysis(app,day)
     margin = app.height/8
     popupColor = 'mintCream'
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     #draw popup
-    canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor)
-    oneDayMoodAnalysis(app,today)
-    drawWeeklyAnalysisText(app,canvas,today)
+    canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor) 
+    drawWeeklyAnalysisText(app,canvas,day)
 
 
 
