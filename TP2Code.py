@@ -42,10 +42,11 @@ def make2dList(rows, cols, string):
 
 
 def appStarted(app):
-    app.mode = 'splash'
+    app.mode = 'main'
     app.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday']
     app.skyColors = ['peachPuff','moccasin','papayaWhip','lemonChiffon','lightYellow','aliceBlue','lightCyan']
+    app.sunColors = ['darkOrange', 'darkOrange', 'orange', 'orange', 'moccasin','lightGoldenrodYellow','lightCyan']
     app.weekDates = getWeek()
     app.currentDay = str(datetime.datetime.now().date())
     app.currentDayName = calendar.day_name[datetime.datetime.now().date().weekday()]
@@ -71,7 +72,7 @@ def appStarted(app):
     app.hTotalCircum = 2*math.pi*app.hR*10
     app.hTotalArea = math.pi * (app.hR)**2
     ###
-    app.cxSun, app.cySun, app.rSun = (app.width/2, app.height/2, app.width/10)
+    app.cxSun, app.cySun, app.rSun = (app.width/2, app.height/2-3, app.width/10)
     app.dMove = 150
     app.dragging = False
     app.getX = 0
@@ -103,7 +104,6 @@ def appStarted(app):
     app.areLinesMoving = False 
     app.buttonColor = 'cyan'
     app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2 = 597.5,400,797.5,600 #calculated values
-    app.isDayClosed = False
 
 def resetAll(app):
     app.mode = 'daily summary'
@@ -213,18 +213,14 @@ def keyPressed(app, event):
                 #sun gets smaller
                 app.rSun += -20
     elif app.mode == 'day':
-        if app.isDayClosed == True:
-            app.timeLastSaved[app.index] = app.currentDay + ' ' + str(datetime.datetime.now().time())[:5]
-            app.mode = 'main'
-            saveFile(app)
         if event.key == 'Right':
             app.mode = 'daily summary'
         #if current text string is too long/exceeds length of underline
-        if len(app.dayEntry[-1]) >= app.maxLineLength:
+        elif len(app.dayEntry[-1]) >= app.maxLineLength:
             #creates new empty string
             app.dayEntry += ['']
             app.moveTextAndLine = True
-        if event.key == 'Space':
+        elif event.key == 'Space':
             app.dayEntry[-1] += ' '
         elif event.key == 'Delete':
             #if entry is empty
@@ -280,6 +276,7 @@ def timerFired(app):
             app.dayChX2 += 38
             app.dayChY2 += 10
         else:
+            print('timerFired(app): day')
             app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2 = 597.5,400,797.5,600
             app.mode = 'day'
 
@@ -385,9 +382,10 @@ def mousePressed(app, event):
     #x2-100,y1,x2,y1+100
     if app.mode == 'day':
         if (x2-100 < event.x < x2) and (y1 < event.y < y1+100):
-            app.isDayClosed = True
+            app.timeLastSaved[app.index] = app.currentDay + ' ' + str(datetime.datetime.now().time())[:5]
             app.mode = 'main'
-        app.isDayClosed = False
+            saveFile(app)
+            app.mode = 'main'
     #elif app.mode == 'daily summary':
         #if (x2-100 < event.x < x2) and (y1 < event.y < y1+100):
             #app.mode = 'day'
@@ -497,14 +495,14 @@ def drawHorizon(app, canvas):
     
     #DRAW HORIZON
     canvas.create_line(0, app.height/2, app.width, app.height/2, 
-                        width = 5, fill = 'orangeRed')
+                        width = 5, fill = app.sunColors[app.index])
 
 def drawSun(app, canvas):
     m1, m2 = app.width/160, app.width/35
     cx, cy, r = app.cxSun, app.cySun, app.rSun
     canvas.create_arc(cx-r-m2, cy-r-m2, cx+r+m2, cy+r+m2, start=0, 
-                                extent=180, fill='darkOrange', 
-                                outline = 'darkOrange')     
+                                extent=180, fill=app.sunColors[app.index], 
+                                outline = app.sunColors[app.index])     
     canvas.create_arc(cx-r-m1, cy-r-m1, cx+r+m1, cy+r+m1, start=0, 
                                 extent=180, fill='gold',
                                 outline = 'gold')                       
@@ -548,6 +546,8 @@ def drawPath(app, canvas):
         canvas.create_polygon(lineX1-10, 640, lineX2-10, app.height, lineX3+10,
             app.height, lineX4+10, 640, fill = app.buttonColor)
         #draw popup rectangle
+        #canvas.create_text(((lineX1-10+lineX4+10)/2-100+(lineX1-10+lineX4+10)/2+100)/2, 480, text = 'click for')
+        #canvas.create_text(((lineX1-10+lineX4+10)/2-100+(lineX1-10+lineX4+10)/2+100)/2, 500, text = 'daily entry!')
         canvas.create_rectangle((lineX1-10+lineX4+10)/2-100,400,(lineX1-10+lineX4+10)/2+100,600, fill = 'white', outline = 'white')
 
 def dayAnimation(app):
