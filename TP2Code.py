@@ -104,6 +104,7 @@ def appStarted(app):
     app.backPath = False
     app.theta = 0
     app.mainCentred = True
+    app.timeLastSaved = ['Not saved yet']*7
     #app.prep = prepositions
 
 def splitString(app,string):
@@ -182,10 +183,10 @@ def keyPressed(app, event):
         resetAll(app)
     if app.mode == 'main':
         #enter year mode
-        if event.key == 'Enter':
-            app.mode = 'year'
+        #if event.key == 'Enter':
+            #app.mode = 'year'
         #enter week mode
-        elif event.key == 'w':
+        if event.key == 'w':
             app.mode = 'week'
         elif event.key == 'd':
             app.mode = 'day'
@@ -206,6 +207,7 @@ def keyPressed(app, event):
     elif app.mode == 'day':
         #enter main mode
         if event.key == 'Enter':
+            app.timeLastSaved[app.index] = datetime.datetime.now().time()
             app.mode = 'main'
             saveFile(app)
             #print(readFile('Entries/2020-12-07-text.txt'))
@@ -480,14 +482,14 @@ def drawDefaultDayText(app, canvas):
     textColor = 'black'
     margin = app.height/8
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
-    canvas.create_text(margin + 130, margin + 20, 
-                            text = 'Today: [That day\'s date]', 
+    canvas.create_text(margin + 200, margin + 30, 
+                            text = f"Today's date: {app.currentDay}", 
+                            font = 'Arial 30 bold', fill = textColor)
+    canvas.create_text(margin + 180, margin + 60, text = f'Time last saved: {app.timeLastSaved[app.index]}', 
                             font = 'Arial 20', fill = textColor)
-    canvas.create_text(margin + 300, margin + 20, text = 'time created', 
-                            font = 'Arial 15', fill = textColor)
-    canvas.create_text(margin + 140, margin + 50, 
-                            text = 'How was your day today?', 
-                            font = 'Arial 20 bold', fill = textColor)
+    #canvas.create_text(margin + 500, margin + 20, 
+                            #text = 'How was your day today?', 
+                            #font = 'Arial 20 ', fill = textColor)
     #canvas.create_text(200, firstTextY + 100, text = 'major events', 
                             #font = 'Arial 40 underline', fill = textColor)          
     #canvas.create_text(200, firstTextY + 150, text = 'Notes', 

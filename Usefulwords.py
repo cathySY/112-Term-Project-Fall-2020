@@ -8,6 +8,18 @@ def helper(string):
 # most synonyms
 # taken from https://www.thesaurus.com/browse/happy
 rawHappy = '''happy
+haha
+ha
+hahaha
+hahahaha
+HAHA
+HA
+HAHAHA
+HAHAHAHA
+LOL
+awesome
+cool
+amazing
 pumped
 excited 
 merry
