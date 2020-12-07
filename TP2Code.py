@@ -50,7 +50,7 @@ def appStarted(app):
     app.weekDates = getWeek()
     #app.weekDates = createDayObjectsInWeek()
     app.currentDay = str(datetime.datetime.now().date())
-    #app.index = app.weekDates.index(app.currentDay)\
+    app.index = app.weekDates.index(app.currentDay)
     #print(f'{app.currentDay}-text.txt')
     app.maxLineLength = 20
     app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
@@ -189,6 +189,20 @@ def keyPressed(app, event):
             app.mode = 'week'
         elif event.key == 'd':
             app.mode = 'day'
+        elif event.key == 'Up':
+            if (app.index >= 0) and (app.index <= len(app.weekDates)-2):
+                app.index += 1
+                app.currentDay = app.weekDates[app.index]
+                app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
+                app.dayEntry = splitString(app,app.fileContents)
+                print(app.index,app.fileContents)
+        elif event.key == 'Down':
+            if (app.index >= 1) and (app.index <= len(app.weekDates)-1):
+                app.index -= 1
+                app.currentDay = app.weekDates[app.index]
+                app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
+                app.dayEntry = splitString(app,app.fileContents)
+                print(app.index,app.fileContents)
     elif app.mode == 'day':
         #enter main mode
         if event.key == 'Enter':
