@@ -21,8 +21,15 @@ class dayMoods(object):
     def addDayEntry(self, dayEntry):
         self.dayEntry = dayEntry
 
+def listToString(app,list):
+    lst = ''
+    for string in list:
+        lst += string
+    return lst
+
 def oneDayMoodAnalysis(app,day):
-    words = app.dayEntry[0].split()
+    contents = listToString(app,app.dayEntry)
+    words = contents.split()
     for word in words:
         if word != '':
             print(word)
