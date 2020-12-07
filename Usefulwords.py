@@ -1,12 +1,16 @@
-
-def helper(lst):
-    newList = ''
-    for word in lst:
-        newList += word
+#splits each long string into into strings of words
+def helper(string):
+    newList = string.split()
+   # for word in lst:
+        #newList += word
     return newList
 
-#synonyms taken from https://www.thesaurus.com/browse/happy
-rawHappy = ['''happy
+# most synonyms
+# taken from https://www.thesaurus.com/browse/happy
+rawHappy = '''happy
+pumped
+excited 
+merry
 cheerful
 contented
 delighted
@@ -34,29 +38,22 @@ chirpy
 content
 convivial
 exultant
-gay
 gleeful
 gratified
-intoxicated
 jolly
 laughing
 light
-'looking good'
 mirthful
-'on cloud nine'
 peppy
 perky
 playful
 sparkling
 sunny
 tickled
-'tickled pink'
-up
-'walking on air'
-''']
+'''
 
 #from https://www.thesaurus.com/browse/sad?s=t
-rawSad = ['''
+rawSad = '''
 sad
 bitter
 dismal
@@ -77,8 +74,6 @@ despondent
 disconsolate
 distressed
 doleful
-down
-'down in dumps'
 downcast
 forlorn
 gloomy
@@ -88,25 +83,23 @@ grieved
 heartsick
 heavyhearted
 hurting
-'in doldrums'
-'in grief'
-'in the dumps'
 languishing
 low
 low-spirited
 lugubrious
 morbid
 morose
-out of sorts
 pensive
-sick at heart
 troubled
 weeping
 woebegone
-''']
+'''
 
 #from https://www.thesaurus.com/browse/angry?s=t
-rawAngry = ['''angry
+rawAngry = '''angry
+rage
+hate
+sulked
 annoyed
 bitter
 enraged
@@ -135,6 +128,7 @@ ferocious
 fierce
 fiery
 fuming
+fumed
 galled
 hateful
 hot
@@ -159,10 +153,91 @@ tumultous
 tumultuous
 turbulent
 vexed
-wrathful''']
-
+wrathful'''
 
 
 happyWords = helper(rawHappy)
+#happyWords.extend(['looking good','on cloud nine','tickled pink'])
 sadWords = helper(rawSad)
+#sadWords.extend(['feeling down','down in the dumps','in doldrums','in grief','in the dumps','out of sorts'])
 angryWords = helper(rawAngry)
+
+rawNotUseful = '''
+aboard
+about
+above
+across
+after
+against
+along
+amid
+among
+anti
+around
+as
+at
+before
+behind
+below
+beneath
+beside
+besides
+between
+beyond
+but
+by
+concerning
+considering
+despite
+down
+during
+except
+excepting
+excluding
+following
+for
+from
+in
+inside
+into
+like
+minus
+near
+of
+off
+on
+onto
+opposite
+outside
+over
+past
+per
+plus
+regarding
+round
+save
+since
+than
+through
+to
+toward
+towards
+under
+underneath
+unlike
+until
+up
+upon
+versus
+via
+with
+within
+without
+'''
+
+rawArticles = "a,an,the,those"
+
+
+notUseful = helper(rawNotUseful)
+articles = helper(rawArticles)
+

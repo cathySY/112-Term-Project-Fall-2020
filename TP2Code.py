@@ -8,10 +8,14 @@
 
 #downloaded from CMU 15-112 website
 import cs112_f20_week7_linter
-import math, copy, random, string
+import math, copy, random, string, calendar
+from datetime import datetime
+
 #from other TP files of mine
 from Usefulwords import *
 from EntryAnalysis import *
+from wordcloud import *
+from journalEntriesSaved import *
 #from perspective import *
 #import perspective 
 import EntryAnalysis
@@ -40,7 +44,13 @@ def make2dList(rows, cols, string):
 
 def appStarted(app):
     app.mode = 'weekly summary'
-    app.dayEntry = ['happy sad angry']
+    app.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
+                'Saturday', 'Sunday']
+    app.weekDates = getWeek()
+    #app.weekDates = createDayObjectsInWeek()
+    app.currentDay = str(datetime.datetime.now().date())
+    #app.index = app.weekDates.index(app.currentDay)
+    app.dayEntry = readFile(EntriesText/f'{app.currentDay}-text.py')
     app.maxLineLength = 100
     app.letterPosition = [app.height/8*2 + 20]
     app.textY = (app.height/8)*2 - app.height/50
@@ -91,6 +101,8 @@ def appStarted(app):
     app.backPath = False
     app.theta = 0
     app.mainCentred = True
+    #app.prep = prepositions
+
 
 def resetAll(app):
     app.mode = 'main'
@@ -164,17 +176,20 @@ def keyPressed(app, event):
         #enter main mode
         if event.key == 'Enter':
             app.mode = 'main'
+            writeFile(EntriesText/f'{app.currentDay}-text.py',app.dayEntry)
+            #weekEntries[app.index] = app.dayEntry
+            #print(weekEntries)
         #if current text string is too long/exceeds length of underline
-        if len(app.dayEntry[-1]) >= app.maxLineLength:
+        if len(app.dayEntry) >= app.maxLineLength:
             #create new empty string
             app.dayEntry += ['']
             app.moveTextAndLine = True
         if event.key == 'Space':
-            app.dayEntry[-1] += ' '
+            app.dayEntry += ' '
         elif event.key == 'Delete':
-            app.dayEntry[-1] = app.dayEntry[-1][:-1]
+            app.dayEntry = app.dayEntry[:-1]
         elif event.key in string.printable:
-            app.dayEntry[-1] += event.key
+            app.dayEntry += event.key
     elif app.mode == 'year':
         pass
 '''       
@@ -398,9 +413,9 @@ def drawDayMode(app, canvas):
     textX = app.width/2
     for n in range(len(app.dayEntry[:-1])):
         textY = (app.height/8)*2 - app.height/50 + lineSpacing*n
-        canvas.create_text(textX, textY, text = app.dayEntry[n], 
+        canvas.create_text(textX, textY, text = app.dayEntry, 
                                     font = 'Arial 20')
-    canvas.create_text(textX, app.textY, text = app.dayEntry[-1], 
+    canvas.create_text(textX, app.textY, text = app.dayEntry, 
                                 font = 'Arial 20')
     drawDefaultDayText(app, canvas)
 
@@ -517,7 +532,7 @@ def drawBackPath(app,canvas):
 def drawDailyButtons(app,canvas):
     x1,y1,x2,y2,x3,y3,x4,y4 = (app.x1*10/11,app.y1*5/3,app.x2+200,
                          app.y2,app.x3-400,app.y3,app.x4*12/11,app.y4*5/3)
-    canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'cyan')
+    canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'cyan',)
 
 def drawWeeklySummaryButton(app, canvas):
     margin = app.height/8
