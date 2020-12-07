@@ -45,6 +45,7 @@ def appStarted(app):
     app.mode = 'main'
     app.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday']
+    app.skyColors = ['peachPuff','moccasin','papayaWhip','lemonChiffon','lightYellow','aliceBlue','lightCyan']
     app.weekDates = getWeek()
     app.currentDay = str(datetime.datetime.now().date())
     app.currentDayName = calendar.day_name[datetime.datetime.now().date().weekday()]
@@ -98,6 +99,10 @@ def appStarted(app):
     app.theta = 0
     app.mainCentred = True
     app.timeLastSaved = ['Not saved yet']*7
+    app.isPopUpBox = False
+    app.areLinesMoving = False 
+    app.buttonColor = 'cyan'
+    app.dayChX1, app.dayChY = 0,0
 
 def resetAll(app):
     app.mode = 'daily summary'
@@ -188,6 +193,7 @@ def keyPressed(app, event):
             app.mode = 'weekly summary'
         #moving from one day to another    
         elif event.key == 'Up':
+            app.areLinesMoving = True
             if (app.index >= 0) and (app.index <= len(app.weekDates)-2):
                 app.index += 1
                 app.currentDayName = app.dayNames[app.index]
@@ -263,6 +269,14 @@ def timerFired(app):
                 (app.yearChartY >= app.height/3)):
             app.yearChartX -= 50
             app.yearChartY -= 25
+    if app.mode == 'month to day':
+        if ((app.dayChX >= app.width/5) and
+                (app.dayChY >= app.height/3)):
+            app.dayChX -= 50
+            app.dayChY -= 25
+
+
+      
 
 
 def mouseDragged(app, event):
@@ -282,6 +296,7 @@ def mouseDragged(app, event):
     #positive or negative
     xdiff = (app.getX - event.x)
     app.theta += xdiff/app.hTotalCircum * (math.pi*2)
+    #app.theta = abs(app.theta)
     app.theta %= 2*math.pi
     #first quadrant:
     #app.povLeft %= app.hTotalCircum
@@ -295,8 +310,8 @@ def mouseDragged(app, event):
             #shift angles
         app.x1 -= xdiff
         app.x4 -= xdiff
-            #app.x1 %= app.hTotalCircum
-            #app.x4 %= app.hTotalCircum
+        #app.x1 %= app.hTotalCircum
+        #app.x4 %= app.hTotalCircum
             #shift x
         #if (app.povLeft < app.width - app.hTotalCircum/5 and 
                 #app.povLeft > app.width - app.hTotalCircum/4):
@@ -340,6 +355,18 @@ def mouseDragged(app, event):
 def mouseReleased(app,event):
     app.dragging = False
 
+
+def mouseMoved(app,event):
+    x1,y1,x2,y2,x3,y3,x4,y4 = (app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4)
+    grad1 = (y2-y1)/(x2+250-(x1+30))
+    grad2 = (y3-y4)/(x3-250-(x4-30))
+    lineX1 = (1/grad1)*(650-y1)+(x1+25)
+    lineX2 = (1/grad2)*(650-y3)+(x3-250)
+    if (lineX1 <= event.x <= lineX2) and (650 <= event.y <= app.height):
+        app.isPopUpBox = True
+    else:
+        app.isPopUpBox = False
+
 def mousePressed(app, event):
     if app.mode == 'splash':
         app.mode = 'main'
@@ -366,13 +393,23 @@ def mousePressed(app, event):
             app.selection = (-1, -1)
         else:
             app.selection = (row, col)
+        x1,y1,x2,y2,x3,y3,x4,y4 = (app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4)
+        grad1 = (y2-y1)/(x2+250-(x1+30))
+        grad2 = (y3-y4)/(x3-250-(x4-30))
+        lineX1 = (1/grad1)*(650-y1)+(x1+25)
+        lineX2 = (1/grad2)*(650-y3)+(x3-250)
+        #if user clicks the rectangle inside the trapezium
+        if (lineX1 <= event.x <= lineX2) and (650 <= event.y <= app.height):
+            print(lineX1,650,lineX2,app.height)
+            #isdayAnimation(app)
+            app.mode = 'month to day'
+            app.isPopUpBox = False
         if app.mainCentred == True:
-            #app.x1*10/11,app.y1*5/3,app.x2+200, app.y2,app.x3-400,app.y3,app.x4*12/11,app.y4*5/3)
-            if (app.x2+200 < event.x < app.x3-400) and (app.y1*5/3 < event.y < app.y3):
-                app.mode = 'day'
+            pass
     if app.mode == 'year':
         if (app.width/5 < event.x < app.width - 50) and (app.height/3 < event.y < app.height - 50):
             app.mode = 'main'
+
 
 # draws the line under the text
 def newLine(app, canvas, x1, y1, x2, y2):
@@ -424,6 +461,7 @@ def drawMainMode(app, canvas):
                 text = f"{app.currentDayName}, {app.currentDay}", 
                 font = 'Arial 30 bold', fill = 'black')
 
+
 def drawYearChart(app, canvas):
     #DRAW YEAR CHART
     canvas.create_rectangle(50, 50, app.yearChartX, app.yearChartY, 
@@ -444,7 +482,7 @@ def drawHorizonAndSun(app, canvas):
 def drawHorizon(app, canvas):
     #DRAW SKY and LAND
     canvas.create_rectangle(0, 0, app.width, app.height/2, 
-                                    fill = 'aliceBlue')
+                                    fill = app.skyColors[app.index])
                                     #rgbString(255, 185, 30))
     canvas.create_rectangle(0, app.height/2, app.width, app.height, 
                                     fill = 'moccasin')    
@@ -479,17 +517,51 @@ def drawPath(app, canvas):
     x1,y1,x2,y2,x3,y3,x4,y4 = (app.x1,app.y1,app.x2,
                          app.y2,app.x3,app.y3,app.x4,app.y4)
     canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'peru')
+    canvas.create_polygon(x1+15,y1,x2+60,y2,x3-60,y3,x4-15,y4, fill = 'pink')
+    canvas.create_polygon(x1+25,y1,x2+80,y2,x3-80,y3,x4-25,y4, fill = 'lightCoral')
+    canvas.create_polygon(x1+30,y1,x2+250,y2,x3-250,y3,x4-30,y4, fill = 'lightBlue')
+    #draw straight lines across
+    grad1 = (y2-y1)/(x2+80-(x1+25))
+    grad2 = (y3-y4)/(x3-80-(x4-25))
+    for y in [650,520,450]:
+        lineX1 = (1/grad1)*(y-y1)+(x1+25)
+        lineX2 = (1/grad2)*(y-y3)+(x3-80)
+        canvas.create_line(lineX1, y, lineX2, y, width = 5, fill = 'peru')
+    #if mouse hovers over both, it changes color
+    if app.isPopUpBox == True:
+        grad1 = (y2-y1)/(x2+250-(x1+30))
+        grad2 = (y3-y4)/(x3-250-(x4-30))
+        lineX1 = (1/grad1)*(650-y1)+(x1+25)
+        lineX2 = (1/grad1)*(app.height-y1)+(x1+25)
+        lineX4 = (1/grad2)*(650-y3)+(x3-250)
+        lineX3 = (1/grad2)*(app.height-y3)+(x3-250)
+        canvas.create_polygon(lineX1-10, 640, lineX2-10, app.height, lineX3+10,
+            app.height, lineX4+10, 640, fill = app.buttonColor)
+        canvas.create_rectangle((lineX1-10+lineX4+10)/2-100,400,(lineX1-10+lineX4+10)/2+100,600, fill = 'blanchedAlmond', outline = 'blanchedAlmond')
 
+def dayAnimation(app):
+    pass
 
 def drawBackPath(app,canvas):
     x1,y1,x2,y2,x3,y3,x4,y4 = (app.bx1,app.by1,app.bx2,app.by2,app.bx3,
                             app.by3,app.bx4,app.by4)
     canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'peru')
+    canvas.create_polygon(x1+15,y1,x2+60,y2,x3-60,y3,x4-15,y4, fill = 'pink')
+    canvas.create_polygon(x1+25,y1,x2+80,y2,x3-80,y3,x4-25,y4, fill = 'lightCoral')
+    canvas.create_polygon(x1+30,y1,x2+250,y2,x3-250,y3,x4-30,y4, fill = 'lightBlue')
+    #draw straight lines across
+    grad1 = (y2-y1)/(x2+80-(x1+25))
+    grad2 = (y3-y4)/(x3-80-(x4-25))
+    for y in [650,520,450]:
+        lineX1 = (1/grad1)*(y-y1)+(x1+25)
+        lineX2 = (1/grad2)*(y-y3)+(x3-80)
+        canvas.create_line(lineX1, y, lineX2, y, width = 5, fill = 'peru')
 
 def drawDailyButtons(app,canvas):
-    x1,y1,x2,y2,x3,y3,x4,y4 = (app.x1*10/11,app.y1*5/3,app.x2+200,
-                         app.y2,app.x3-400,app.y3,app.x4*12/11,app.y4*5/3)
-    canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'cyan',)
+    pass
+    #x1,y1,x2,y2,x3,y3,x4,y4 = (app.x1*10/11,app.y1*5/3,app.x2+200,
+                        # app.y2,app.x3-400,app.y3,app.x4*12/11,app.y4*5/3)
+    #canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'cyan',)
 
 def drawWeeklySummaryButton(app, canvas):
     margin = app.height/8
@@ -555,9 +627,9 @@ def drawBarChart(app,canvas):
             y1 = y0 + happy*fraction, 
             y2 = y0 + (happy+sad)*fraction, 
             y3 = y0 + (happy+sad+angry)*fraction
-            canvas.create_rectangle(x0, y0, x1, y1, fill ='yellow', line = 10)
-            canvas.create_rectangle(x1, y1, x0, y2, fill ='cornflowerBlue')
-            canvas.create_rectangle(x0, y2, x1, y3, fill ='crimson')
+            canvas.create_rectangle(x0, y0, x1, y1, fill ='yellow', outline = 'white')
+            canvas.create_rectangle(x1, y1, x0, y2, fill ='cornflowerBlue', outline = 'white')
+            canvas.create_rectangle(x0, y2, x1, y3, fill ='crimson', outline = 'white')
             canvas.create_text(x0+(x1-x0)/2, y3 + 20, text = day[:3], font = 'Arial 20')
         barX += ((800-80*7)/6 + 80)
 
