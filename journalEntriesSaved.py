@@ -32,4 +32,4 @@ def splitString(string):
     listOfStrings += [string]
     return listOfStrings
 
-print(splitString('1234567'))
+#print(splitString('1234567'))

@@ -55,7 +55,6 @@ def appStarted(app):
     app.maxLineLength = 20
     app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
     app.dayEntry = splitString(app,app.fileContents)
-    print(app.dayEntry)
     app.letterPosition = [app.height/8*2 + 20]
     app.textY = (app.height/8)*2 - app.height/50
     app.lineY = (app.height/8)*2

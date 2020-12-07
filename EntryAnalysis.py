@@ -10,6 +10,7 @@ class dayMoods(object):
         self.angry = 0
         self.dayEntry = ''
     def addHappyWord(self):
+        print('yes')
         self.happy += 1
     def addSadWord(self):
         self.sad += 1
@@ -34,9 +35,9 @@ Saturday = daysOfWeek()
 Sunday = daysOfWeek()
 '''
 
-def oneDayMoodAnalysis(app,day):
-    entry = app.fileContents.split()
-    for word in entry:
+def oneDayMoodAnalysis(app,file):
+    words = file.split()
+    for word in words:
         if word != '':
             if word in happyWords:
                 day.addHappyWord()
@@ -44,22 +45,6 @@ def oneDayMoodAnalysis(app,day):
                 day.addSadWord()
             elif word in angryWords:
                 day.addAngryWord()
-            
-
-def drawWeeklyAnalysisText(app,canvas,day):
-    text = day.printAnalysis()
-    canvas.create_text(app.width/2, app.height/2, text = text, font = 'Arial 40 bold')
-
-
-def drawWeeklySummary(app, canvas):
-    today = dayMoods()
-    margin = app.height/8
-    popupColor = 'mintCream'
-    x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
-    #draw popup
-    canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor)
-    oneDayMoodAnalysis(app,today)
-    drawWeeklyAnalysisText(app,canvas,today)
 
 '''
 today = entryMoodFrequency()
@@ -68,11 +53,11 @@ oneDayMoodAnalysis(today,dayEntry)
 print (today.printAnalysis())
 '''
 
-#learnt from https://www.dataquest.io/blog/python-datetime-tutorial/
-todayDate = datetime.datetime.now().date()
-print(todayDate)
-print(calendar.day_name[todayDate.weekday()])
+#todayDate = datetime.datetime.now().date()
+#print(todayDate)
+#print(calendar.day_name[todayDate.weekday()])
 
+#datetime learnt from https://www.dataquest.io/blog/python-datetime-tutorial/
 def getWeek():
     myDate = '2020-12-07' #datetime.datetime.now()
     myDate = datetime.datetime.strptime(myDate, "%Y-%m-%d")
@@ -88,8 +73,26 @@ def createDayObjectsInWeek():
     for day in days:
         day = dayMoods()
 
+createDayObjectsInWeek()
+
 def createFiles():
     pass
+
+#prints the text
+def drawWeeklyAnalysisText(app,canvas,day):
+    text = day.printAnalysis()
+    canvas.create_text(app.width/2, app.height/2, text = text, font = 'Arial 40 bold')
+
+currentDay = dayMoods()
+
+def drawWeeklySummary(app, canvas):
+    margin = app.height/8
+    popupColor = 'mintCream'
+    x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
+    #draw popup
+    canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor)
+    oneDayMoodAnalysis(app,app.fileContents)
+    drawWeeklyAnalysisText(app,canvas,currentDay)
 
 #print(str(datetime.datetime.now().date()))
 #print(str(datetime.datetime.now().date()))
