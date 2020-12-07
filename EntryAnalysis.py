@@ -87,7 +87,7 @@ def drawWeeklySummary(app, canvas):
     day = dayMoods(app.currentDayName)
     oneDayMoodAnalysis(app,day)
     margin = app.height/8
-    popupColor = 'mintCream'
+    popupColor = 'white'
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     #draw popup
     canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor) 

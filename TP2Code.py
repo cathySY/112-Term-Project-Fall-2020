@@ -42,7 +42,7 @@ def make2dList(rows, cols, string):
 
 
 def appStarted(app):
-    app.mode = 'main'
+    app.mode = 'splash'
     app.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday']
     app.skyColors = ['peachPuff','moccasin','papayaWhip','lemonChiffon','lightYellow','aliceBlue','lightCyan']
@@ -102,7 +102,8 @@ def appStarted(app):
     app.isPopUpBox = False
     app.areLinesMoving = False 
     app.buttonColor = 'cyan'
-    app.dayChX1, app.dayChY = 0,0
+    app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2 = 597.5,400,797.5,600 #calculated values
+    app.isDayClosed = False
 
 def resetAll(app):
     app.mode = 'daily summary'
@@ -212,11 +213,12 @@ def keyPressed(app, event):
                 #sun gets smaller
                 app.rSun += -20
     elif app.mode == 'day':
-        #enter main mode
-        if event.key == 'Enter':
+        if app.isDayClosed == True:
             app.timeLastSaved[app.index] = app.currentDay + ' ' + str(datetime.datetime.now().time())[:5]
             app.mode = 'main'
             saveFile(app)
+        if event.key == 'Right':
+            app.mode = 'daily summary'
         #if current text string is too long/exceeds length of underline
         if len(app.dayEntry[-1]) >= app.maxLineLength:
             #creates new empty string
@@ -237,8 +239,8 @@ def keyPressed(app, event):
         elif event.key in string.printable:
             app.dayEntry[-1] += event.key
     elif app.mode == 'daily summary':
-        if event.key == 'Enter':
-            app.mode = 'main'
+        if event.key == 'Left':
+            app.mode = 'day'
     elif app.mode == 'weekly summary':
         if event.key == 'Enter':
             app.mode = 'main'
@@ -269,11 +271,17 @@ def timerFired(app):
                 (app.yearChartY >= app.height/3)):
             app.yearChartX -= 50
             app.yearChartY -= 25
-    if app.mode == 'month to day':
-        if ((app.dayChX >= app.width/5) and
-                (app.dayChY >= app.height/3)):
-            app.dayChX -= 50
-            app.dayChY -= 25
+    if app.mode == 'main to day':
+        x1, y1, x2, y2 = app.height/8, app.height/8, app.width - app.height/8, app.height - app.height/8
+        if ((app.dayChX1 >= x1) and (app.dayChY1 >= y1)) and ((
+                (app.dayChX2 <= x2) and (app.dayChY2 <= y2))):
+            app.dayChX1 -= 38
+            app.dayChY1 -= 26
+            app.dayChX2 += 38
+            app.dayChY2 += 10
+        else:
+            app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2 = 597.5,400,797.5,600
+            app.mode = 'day'
 
 
       
@@ -377,10 +385,12 @@ def mousePressed(app, event):
     #x2-100,y1,x2,y1+100
     if app.mode == 'day':
         if (x2-100 < event.x < x2) and (y1 < event.y < y1+100):
-            app.mode = 'daily summary'
-    elif app.mode == 'daily summary':
-        if (x2-100 < event.x < x2) and (y1 < event.y < y1+100):
-            app.mode = 'day'
+            app.isDayClosed = True
+            app.mode = 'main'
+        app.isDayClosed = False
+    #elif app.mode == 'daily summary':
+        #if (x2-100 < event.x < x2) and (y1 < event.y < y1+100):
+            #app.mode = 'day'
     #DRAW YEAR CHART
     if app.mode == 'main':
         #if click on year chart
@@ -400,9 +410,7 @@ def mousePressed(app, event):
         lineX2 = (1/grad2)*(650-y3)+(x3-250)
         #if user clicks the rectangle inside the trapezium
         if (lineX1 <= event.x <= lineX2) and (650 <= event.y <= app.height):
-            print(lineX1,650,lineX2,app.height)
-            #isdayAnimation(app)
-            app.mode = 'month to day'
+            app.mode = 'main to day'
             app.isPopUpBox = False
         if app.mainCentred == True:
             pass
@@ -421,7 +429,7 @@ def drawDayMode(app, canvas):
     popupColor = 'blanchedAlmond'
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     #draw popup
-    canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor)
+    canvas.create_rectangle(x1, y1, x2, y2, fill = 'white')
     newLine(app, canvas, margin*2, app.lineY, app.width - margin*2, app.lineY)
     #draw text
     lineSpacing = 40
@@ -521,8 +529,10 @@ def drawPath(app, canvas):
     canvas.create_polygon(x1+25,y1,x2+80,y2,x3-80,y3,x4-25,y4, fill = 'lightCoral')
     canvas.create_polygon(x1+30,y1,x2+250,y2,x3-250,y3,x4-30,y4, fill = 'lightBlue')
     #draw straight lines across
-    grad1 = (y2-y1)/(x2+80-(x1+25))
-    grad2 = (y3-y4)/(x3-80-(x4-25))
+    if ((x3-80-(x4-25))) != 0:
+        grad1 = (y2-y1)/(x2+80-(x1+25))
+    if ((x3-80-(x4-25))) != 0:
+        grad2 = (y3-y4)/(x3-80-(x4-25)) 
     for y in [650,520,450]:
         lineX1 = (1/grad1)*(y-y1)+(x1+25)
         lineX2 = (1/grad2)*(y-y3)+(x3-80)
@@ -537,7 +547,8 @@ def drawPath(app, canvas):
         lineX3 = (1/grad2)*(app.height-y3)+(x3-250)
         canvas.create_polygon(lineX1-10, 640, lineX2-10, app.height, lineX3+10,
             app.height, lineX4+10, 640, fill = app.buttonColor)
-        canvas.create_rectangle((lineX1-10+lineX4+10)/2-100,400,(lineX1-10+lineX4+10)/2+100,600, fill = 'blanchedAlmond', outline = 'blanchedAlmond')
+        #draw popup rectangle
+        canvas.create_rectangle((lineX1-10+lineX4+10)/2-100,400,(lineX1-10+lineX4+10)/2+100,600, fill = 'white', outline = 'white')
 
 def dayAnimation(app):
     pass
@@ -550,8 +561,10 @@ def drawBackPath(app,canvas):
     canvas.create_polygon(x1+25,y1,x2+80,y2,x3-80,y3,x4-25,y4, fill = 'lightCoral')
     canvas.create_polygon(x1+30,y1,x2+250,y2,x3-250,y3,x4-30,y4, fill = 'lightBlue')
     #draw straight lines across
-    grad1 = (y2-y1)/(x2+80-(x1+25))
-    grad2 = (y3-y4)/(x3-80-(x4-25))
+    if ((x3-80-(x4-25))) != 0:
+        grad1 = (y2-y1)/(x2+80-(x1+25))
+    if ((x3-80-(x4-25))) != 0:
+        grad2 = (y3-y4)/(x3-80-(x4-25)) 
     for y in [650,520,450]:
         lineX1 = (1/grad1)*(y-y1)+(x1+25)
         lineX2 = (1/grad2)*(y-y3)+(x3-80)
@@ -638,15 +651,24 @@ def drawSplashPage(app, canvas):
         canvas.create_text(app.width/2, 300, text='If you don’t stop and look', font='Krungthep 25')
         canvas.create_text(app.width/2, 350, text='around once in a while,', font = 'Krungthep 25')
         canvas.create_text(app.width/2, 400, text=' you could miss it."', font='Krungthep 50')
-        canvas.create_text(app.width/2, 500, text='Click anywhere to begin!', font='Arial 20')
+        canvas.create_text(app.width/2, 450, text='Ferris Bueller', font='Krungthep 20')
+        canvas.create_text(app.width/2, 550, text='Click anywhere to begin!', font='Arial 20')
+        
+        #credits
+        canvas.create_text(app.width-300, app.height-20, text="All the Write Moves, by Cathy Yi (Fall'19 112 TP)", font='Arial 20')
 
 def redrawAll(app, canvas):
     if app.mode == 'splash':
         drawSplashPage(app, canvas)
     elif app.mode == 'day':
+        drawMainMode(app, canvas)
         drawDayMode(app, canvas)
         drawWeeklySummaryButton(app, canvas)
+    elif app.mode == 'main to day':
+        drawMainMode(app, canvas)
+        canvas.create_rectangle(app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2, fill = 'white')
     elif app.mode == 'daily summary':
+        drawMainMode(app, canvas)
         drawWeeklySummary(app, canvas)
         drawWeeklySummaryButton(app, canvas)
     elif app.mode == 'weekly summary':
