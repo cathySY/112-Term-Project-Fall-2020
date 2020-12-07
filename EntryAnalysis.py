@@ -2,15 +2,17 @@ from Usefulwords import *
 #from datetime 
 import datetime
 import calendar
+from journalEntriesSaved import *
+
 
 class dayMoods(object):
-    def __init__(self):
+    def __init__(self, date):
+        self.date = date
         self.happy = 0 
         self.sad = 0
         self.angry = 0
         self.dayEntry = ''
     def addHappyWord(self):
-        print('yes')
         self.happy += 1
     def addSadWord(self):
         self.sad += 1
@@ -20,6 +22,11 @@ class dayMoods(object):
         return (f'# of happy words = {self.happy} \n # of sad words = {self.sad} \n # of angry words = {self.angry}')
     def addDayEntry(self, dayEntry):
         self.dayEntry = dayEntry
+    def allMoodNumbers(self):
+        return (self.happy, self.sad, self.angry)
+    def __repr__(self):
+        return f'{self.date}'
+        #,{self.happy}, {self.sad}, {self.angry}'
 
 def listToString(app,list):
     lst = ''
@@ -28,17 +35,22 @@ def listToString(app,list):
     return lst
 
 def oneDayMoodAnalysis(app,day):
-    contents = listToString(app,app.dayEntry)
+    print(day)
+    print(app.dayNames)
+    index = app.dayNames.index(str(day))
+    date = app.weekDates[index]
+    contents = readFile(f'Entries/{date}-text.txt')
+    #contents = listToString(app,app.dayEntry)
     words = contents.split()
     for word in words:
         if word != '':
-            print(word)
             if (word in happyWords) or (word[:-1] in happyWords):
                 day.addHappyWord()
             elif (word in sadWords) or (word[:-1] in sadWords):
                 day.addSadWord()
             elif (word in angryWords) or (word[:-1] in angryWords):
                 day.addAngryWord()
+    return (day.happy, day.sad, day.angry)
 
 #todayDate = datetime.datetime.now().date()
 #print(todayDate)
@@ -58,7 +70,7 @@ def getWeek():
 def createDayObjectsInWeek():
     days = getWeek()
     for day in days:
-        day = dayMoods()
+        day = dayMoods(day)
 
 createDayObjectsInWeek()
 
@@ -70,16 +82,29 @@ def drawWeeklyAnalysisText(app,canvas,day):
     text = day.printAnalysis()
     canvas.create_text(app.width/2, app.height/2, text = text, font = 'Arial 40 bold')
 
+
 def drawWeeklySummary(app, canvas):
-    for day in app.dayNames:
-        day = dayMoods()
-    oneDayMoodAnalysis(app,day)
+    day = dayMoods('day')
+    #oneDayMoodAnalysis(app,day.date)
     margin = app.height/8
     popupColor = 'mintCream'
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     #draw popup
     canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor) 
     drawWeeklyAnalysisText(app,canvas,day)
+
+
+def getMoodNumbersWeek(app):
+    moodDict = {}
+    for day in app.dayNames:
+        moodDict[day] = getMoodNumbersDay(app, day)
+    print(moodDict)
+    return moodDict
+
+def getMoodNumbersDay(app, day):
+    day = dayMoods(day)
+    return oneDayMoodAnalysis(app,day)
+
 
 
 

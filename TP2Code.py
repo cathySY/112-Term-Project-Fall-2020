@@ -194,6 +194,7 @@ def keyPressed(app, event):
         elif event.key == 'Up':
             if (app.index >= 0) and (app.index <= len(app.weekDates)-2):
                 app.index += 1
+                app.currentDayName = app.dayNames[app.index]
                 app.currentDay = app.weekDates[app.index]
                 app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
                 app.dayEntry = splitString(app,app.fileContents)
@@ -201,6 +202,7 @@ def keyPressed(app, event):
         elif event.key == 'Down':
             if (app.index >= 1) and (app.index <= len(app.weekDates)-1):
                 app.index -= 1
+                app.currentDayName = app.dayNames[app.index]
                 app.currentDay = app.weekDates[app.index]
                 app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
                 app.dayEntry = splitString(app,app.fileContents)
@@ -242,6 +244,9 @@ def keyPressed(app, event):
                     app.dayEntry[-1] += event.key
             else: 
                 app.dayEntry[-1] += event.key
+    elif app.mode == 'weekly summary':
+        if event.key == 'Enter':
+            app.mode = 'main'
     elif app.mode == 'year':
         pass
 '''       
@@ -263,6 +268,7 @@ def saveFile(app):
     writeFile(f'Entries/{app.currentDay}-text.txt',contents)
 
 def timerFired(app):
+    getMoodNumbersWeek(app)
     #moves text and line downwards at the same pace until a new line is reached
     if app.moveTextAndLine == True:
         app.lineY += app.dLine
@@ -505,6 +511,9 @@ def drawMainMode(app, canvas):
     drawTrees(app, canvas)
     drawDailyButtons(app,canvas)
     drawYearChart(app, canvas)
+    canvas.create_text(app.width-200,  30, 
+                text = f"{app.currentDayName}, {app.currentDay}", 
+                font = 'Arial 30 bold', fill = 'black')
 
 
 def drawYearChart(app, canvas):
@@ -708,6 +717,7 @@ def redrawAll(app, canvas):
         drawWeeklySummaryButton(app, canvas)
     elif app.mode == 'main':
         drawMainMode(app, canvas)
+        
     elif app.mode == 'year' or app.mode == 'main':
         drawMainMode(app, canvas)
         drawYearMode(app, canvas)
