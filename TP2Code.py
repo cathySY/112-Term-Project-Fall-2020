@@ -1,5 +1,5 @@
 #################################################
-# TP2 Code.py
+# TP2Code.py
 #
 # Your name: Yi Sijun Cathy
 # Your andrew id: sijuncay
@@ -15,8 +15,6 @@ from Usefulwords import *
 from EntryAnalysis import *
 from wordcloud import *
 from fileFunctions import *
-import os
-THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 #from perspective import *
 #import perspective 
 import EntryAnalysis
@@ -25,7 +23,6 @@ import Usefulwords
 #downloaded from CMU 15-112 website
 from cmu_112_graphics import *
 
-''' add this quote as a splash page after TP2? '''
 # “Life moves pretty fast. If you don’t stop and look around 
 #  once in a while, you could miss it.”
 #                                             Ferris Bueller
@@ -44,17 +41,14 @@ def make2dList(rows, cols, string):
     return [ ([emptyColor] * cols) for row in range(rows) ]
 
 
-
 def appStarted(app):
     app.mode = 'main'
     app.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday']
     app.weekDates = getWeek()
-    #app.weekDates = createDayObjectsInWeek()
     app.currentDay = str(datetime.datetime.now().date())
     app.currentDayName = calendar.day_name[datetime.datetime.now().date().weekday()]
     app.index = app.weekDates.index(app.currentDay)
-    #print(f'{app.currentDay}-text.txt')
     app.maxLineLength = 100
     app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
     app.dayEntry = splitString(app,app.fileContents)
@@ -66,9 +60,6 @@ def appStarted(app):
     app.moveTextAndLine = False
     app.textDict = {}
     app.yearChartX, app.yearChartY = app.width/5, app.height/3
-    #from CMU course notes about drawing a grid:
-    #https://www.cs.cmu.edu/~112/notes/notes-animations-part1.html#exampleGrids
-    #I modified the parameters
     app.rows = 3
     app.cols = 4
     app.margin = 100 # margin around grid
@@ -79,8 +70,7 @@ def appStarted(app):
     app.hTotalCircum = 2*math.pi*app.hR*10
     app.hTotalArea = math.pi * (app.hR)**2
     ###
-    app.cxSun, app.cySun, app.rSun = (app.width/2, 
-                                app.height/2, app.width/10)
+    app.cxSun, app.cySun, app.rSun = (app.width/2, app.height/2, app.width/10)
     app.dMove = 150
     app.dragging = False
     app.getX = 0
@@ -173,7 +163,7 @@ def resetAll(app):
     app.mainCentred = True
     app.timeLastSaved = ['Not saved yet']*7
 
-
+#splits a long string into short strings of equal lengths
 def splitString(app,string):
     string = string
     listOfStrings = []
@@ -183,82 +173,20 @@ def splitString(app,string):
     listOfStrings += [string]
     return listOfStrings
 
+#joins short strings into a long string
 def listToString(app,list):
     lst = ''
     for string in list:
         lst += string
     return lst
 
-def resetAll(app):
-    app.mode = 'main'
-    app.dayEntry = ['']
-    app.maxLineLength = 100
-    app.letterPosition = [app.height/8*2 + 20]
-    app.textY = (app.height/8)*2 - app.height/50
-    app.lineY = (app.height/8)*2
-    app.lineMoveCount = 0
-    app.dLine = 5
-    app.moveTextAndLine = False
-    app.textDict = {}
-    app.yearChartX, app.yearChartY = app.width/5, app.height/3
-    #from CMU course notes about drawing a grid:
-    #https://www.cs.cmu.edu/~112/notes/notes-animations-part1.html#exampleGrids
-    #I modified the parameters
-    app.rows = 3
-    app.cols = 4
-    app.margin = 100 # margin around grid
-    app.selection = (-1, -1) # (row, col) of selection, (-1,-1) for none
-    ### Circle
-    app.hDistCovered = 0
-    app.hR, app.hFrameCircum = app.height/2, app.width
-    app.hTotalCircum = 2*math.pi*app.hR*10
-    app.hTotalArea = math.pi * (app.hR)**2
-    ###
-    app.cxSun, app.cySun, app.rSun = (app.width/2, 
-                                app.height/2, app.width/10)
-    app.dMove = 150
-    app.dragging = False
-    app.getX = 0
-    app.getY = 0
-    app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4 = (
-                        app.width/2 - 40,
-                        app.height/2+2.5, 
-                        app.width/5,
-                        app.height, 
-                        app.width - app.width/5, 
-                        app.height,
-                        app.width/2 + 40, 
-                        app.height/2+2.5)
-    app.bx1,app.by1,app.bx2,app.by2,app.bx3,app.by3,app.bx4,app.by4 = (
-                        -app.width*3, #x
-                        app.height/2+2.5, 
-                        -900, #x
-                        app.height, 
-                        -900  + app.width*3/5, #x
-                        app.height,
-                        -app.width*3 + 80, #x
-                        app.height/2+2.5)
-    app.povLeft = app.width
-    app.backPath = False
-    app.theta = 0
-    app.mainCentred = True
-
-
-
 def keyPressed(app, event):
     if event.key == 'Tab':
         resetAll(app)
     if app.mode == 'main':
-        #enter year mode
-        #if event.key == 'Enter':
-            #app.mode = 'year'
-        #enter week mode
-        if event.key == 'w':
-            app.mode = 'week'
-        elif event.key == 'Space':
+        if event.key == 'Space':
             app.mode = 'weekly summary'
-        elif event.key == 'd':
-            app.mode = 'day'
+        #moving from one day to another    
         elif event.key == 'Up':
             if (app.index >= 0) and (app.index <= len(app.weekDates)-2):
                 app.index += 1
@@ -266,6 +194,7 @@ def keyPressed(app, event):
                 app.currentDay = app.weekDates[app.index]
                 app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
                 app.dayEntry = splitString(app,app.fileContents)
+                #sun gets bigger
                 app.rSun += 20
         elif event.key == 'Down':
             if (app.index >= 1) and (app.index <= len(app.weekDates)-1):
@@ -274,7 +203,7 @@ def keyPressed(app, event):
                 app.currentDay = app.weekDates[app.index]
                 app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
                 app.dayEntry = splitString(app,app.fileContents)
-                #sun gets bigger
+                #sun gets smaller
                 app.rSun += -20
     elif app.mode == 'day':
         #enter main mode
@@ -282,63 +211,38 @@ def keyPressed(app, event):
             app.timeLastSaved[app.index] = app.currentDay + ' ' + str(datetime.datetime.now().time())[:5]
             app.mode = 'main'
             saveFile(app)
-            #print(readFile('Entries/2020-12-07-text.txt'))
-            #weekEntries[app.index] = app.dayEntry
-            #print(weekEntries)
         #if current text string is too long/exceeds length of underline
         if len(app.dayEntry[-1]) >= app.maxLineLength:
-            #create new empty string
+            #creates new empty string
             app.dayEntry += ['']
             app.moveTextAndLine = True
         if event.key == 'Space':
-            if len(app.dayEntry) >= 2:
-                if len(app.dayEntry[-2]) < app.maxLineLength:
-                    app.dayEntry[-2] += ' '
-                else:
-                    app.dayEntry[-1] += ' '
-            else:
-                app.dayEntry[-1] += ' '
+            app.dayEntry[-1] += ' '
         elif event.key == 'Delete':
+            #if entry is empty
             if app.dayEntry[0] == '':
                 pass
             else:
+                #if last string is empty, delete from second-last string
                 if app.dayEntry[-1] == '':
                     app.dayEntry[-2] = app.dayEntry[-2][:-1]
+                # if last string is not empty, delete from last string
                 app.dayEntry[-1] = app.dayEntry[-1][:-1]
         elif event.key in string.printable:
-            if len(app.dayEntry) >= 2:
-                if len(app.dayEntry[-2]) < app.maxLineLength:
-                    app.dayEntry[-2] += event.key
-                else:
-                    app.dayEntry[-1] += event.key
-            else: 
-                app.dayEntry[-1] += event.key
+            app.dayEntry[-1] += event.key
     elif app.mode == 'daily summary':
         if event.key == 'Enter':
             app.mode = 'main'
     elif app.mode == 'weekly summary':
         if event.key == 'Enter':
             app.mode = 'main'
-'''       
-def oneDayMoodAnalysis(app,canvas,day):
-    for word in app.dayEntry:
-        if word in happyWords:
-            addHappyWord(day)
-        elif word in sadWords:
-            addSadWord(day)
-        elif word in angryWords:
-            addAngryWord(day)
-def drawWeeklyAnalysisText(app,canvas,day):
-    text = day.printAnalysis()
-    canvas.create_text(app.width/2, app.height/2, text = text)
-    '''
 
+#replaces content in file with content written in entry using a long string
 def saveFile(app):
     contents = listToString(app,app.dayEntry)
     writeFile(f'Entries/{app.currentDay}-text.txt',contents)
 
 def timerFired(app):
-    #getMoodNumbersWeek(app) = this result is so beautiful! :D
     #moves text and line downwards at the same pace until a new line is reached
     if app.moveTextAndLine == True:
         app.lineY += app.dLine
@@ -348,19 +252,18 @@ def timerFired(app):
         app.moveTextAndLine = False
         app.lineMoveCount = 0
     if app.mode == 'year':
+        #year chart expands when clicked
         if ((app.yearChartX <= app.width - 50) and
                 (app.yearChartY <= app.height - 50)):
             app.yearChartX += 50
             app.yearChartY += 25
     if app.mode == 'main':
+        #year chart shrinks when clicked
         if ((app.yearChartX >= app.width/5) and
                 (app.yearChartY >= app.height/3)):
-            #app.width/5, app.height/3
             app.yearChartX -= 50
             app.yearChartY -= 25
-    if app.mode == 'daily summary':
-        pass
-        #oneDayMoodAnalysis(app,today)
+
 
 def mouseDragged(app, event):
     app.dragging = True
@@ -395,10 +298,10 @@ def mouseDragged(app, event):
             #app.x1 %= app.hTotalCircum
             #app.x4 %= app.hTotalCircum
             #shift x
-        if (app.povLeft < app.width - app.hTotalCircum/5 and 
-                app.povLeft > app.width - app.hTotalCircum/4):
-            app.x2 -= xdiff*8
-            app.x3 -= xdiff*8
+        #if (app.povLeft < app.width - app.hTotalCircum/5 and 
+                #app.povLeft > app.width - app.hTotalCircum/4):
+            #app.x2 -= xdiff*8
+            #app.x3 -= xdiff*8
         app.x2 -= xdiff*1/4
         app.x3 -= xdiff*1/4
             #app.x2 %= app.hTotalCircum
@@ -409,19 +312,23 @@ def mouseDragged(app, event):
         #app.cxSun -= xdiff
         #TRAPEZIUM OF PATH
             #shift angles
+        app.x1 -= xdiff
+        app.x4 -= xdiff
         app.bx1 -= xdiff
         app.bx4 -= xdiff
             #app.bx1 %= app.hTotalCircum
             #app.bx4 %= app.hTotalCircum
             #shift x
-        if (app.povLeft < app.width - app.hTotalCircum*0.6 and 
-                    app.povLeft > app.width - app.hTotalCircum*3/4):
-                app.bx2 -= xdiff*8
-                app.bx3 -= xdiff*8
-        elif (app.povLeft <= app.width - app.hTotalCircum/4 and 
-                    app.povLeft > app.width - app.hTotalCircum/4.5):
-                app.bx2 -= xdiff*8
-                app.bx3 -= xdiff*8
+        #if (app.povLeft < app.width - app.hTotalCircum*0.6 and 
+                    #app.povLeft > app.width - app.hTotalCircum*3/4):
+                #app.bx2 -= xdiff*8
+                #app.bx3 -= xdiff*8
+        # (app.povLeft <= app.width - app.hTotalCircum/4 and 
+                    #app.povLeft > app.width - app.hTotalCircum/4.5):
+                #app.bx2 -= xdiff*8
+                #app.bx3 -= xdiff*8
+        app.x2 -= xdiff*1/4
+        app.x3 -= xdiff*1/4
         app.bx2 -= xdiff*1/4
         app.bx3 -= xdiff*1/4
             #app.bx2 %= app.hTotalCircum
@@ -429,54 +336,13 @@ def mouseDragged(app, event):
     #elif (app.povLeft <= app.width - app.hTotalCircum/4 and 
                 #app.povLeft > app.width - app.hTotalCircum*3/4):
         #app.backPath = False
-'''
-    else:
-        app.x1 -= app.dMove
-        app.x4 -= app.dMove
-        #app.x2 -= app.dMove*4/5
-        #app.x3 -= app.dMove*4/5
-        app.x1 %= app.hTotalCircum
-        app.x4 %= app.hTotalCircum
-        #app.x2 %= app.hTotalCircum
-        #app.x3 %= app.hTotalCircum
-        
-        app.cxSun -= app.dMove
-        app.cxSun %= app.hTotalCircum
-    #if event.x = app.width/2:
-        #indication that this is the centre
-    '''
-'''
-        if app.cxSun > app.width/2:
-            app.rSun -= 6
-        else: 
-            app.rSun += 6
-        #length of end of path
-        if app.cxSun < app.width/2:
-            app.x1 -= 5
-            app.x4 += 5
-        else: 
-            app.x1 += 5
-            app.x4 -= 5
-
-        if app.cxSun < app.width/2:
-            app.rSun -= 6
-        else: 
-            app.rSun += 6
-
-        if app.cxSun > app.width/2:
-            app.x1 -= 5
-            app.x4 += 5
-        else: 
-            app.x1 += 5
-            app.x4 -= 5
-            '''
 
 def mouseReleased(app,event):
-    if app.dragging == False:
-        return
     app.dragging = False
 
 def mousePressed(app, event):
+    if app.mode == 'splash':
+        app.mode = 'main'
     app.getX = event.x
     app.getY = event.y
     margin = app.height/8
@@ -508,18 +374,7 @@ def mousePressed(app, event):
         if (app.width/5 < event.x < app.width - 50) and (app.height/3 < event.y < app.height - 50):
             app.mode = 'main'
 
-
-
-    '''
-    cx, cy = app.width/2, app.height/2
-    if ((cx-100 <= event.x <= cx+100) and
-        (cy+100 <= event.y <= cy+120)):
-        app.mode = 'month'
-        '''
-
-
-
-
+# draws the line under the text
 def newLine(app, canvas, x1, y1, x2, y2):
     canvas.create_line(x1, y1, x2, y2, fill = 'blue', width = 3)
 
@@ -530,28 +385,22 @@ def drawDayMode(app, canvas):
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     #draw popup
     canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor)
-        #Draw triangle to look like a popup: canvas.create_triangle(app.width/2 - )
-    #draw line
-        #need to animate line moving down
-        #need to animate scrolling if no. of lines exceeds max on a page
     newLine(app, canvas, margin*2, app.lineY, app.width - margin*2, app.lineY)
     #draw text
-        #text moves down as text length exceeds line length
     lineSpacing = 40
     textX = app.width/2
-    print(app.dayEntry)
+    #draws text above current line
     for n in range(len(app.dayEntry[:-1])):
         textY = (app.height/8)*2 - app.height/50 + lineSpacing*n
         canvas.create_text(textX, textY, text = app.dayEntry[n], 
                                     font = 'Arial 20')
+    #draws current line
     canvas.create_text(textX, app.textY, text = app.dayEntry[-1], 
                                 font = 'Arial 20')
     drawDefaultDayText(app, canvas)
 
 
 #draws the default text:
-#1. date
-#2. prompt(?)
 def drawDefaultDayText(app, canvas):
     textColor = 'black'
     margin = app.height/8
@@ -560,14 +409,7 @@ def drawDefaultDayText(app, canvas):
                             text = f"Entry date: {app.currentDayName}, {app.currentDay}", 
                             font = 'Arial 30 bold', fill = textColor)
     canvas.create_text(margin + 170, margin + 60, text = f'Time last saved: {app.timeLastSaved[app.index]}', 
-                            font = 'Arial 20', fill = textColor)
-    #canvas.create_text(margin + 500, margin + 20, 
-                            #text = 'How was your day today?', 
-                            #font = 'Arial 20 ', fill = textColor)
-    #canvas.create_text(200, firstTextY + 100, text = 'major events', 
-                            #font = 'Arial 40 underline', fill = textColor)          
-    #canvas.create_text(200, firstTextY + 150, text = 'Notes', 
-                            #font = 'Arial 40 underline', fill = textColor)    
+                            font = 'Arial 20', fill = textColor)   
 
 #Main mode: draw a sunset and a path leading to it
 def drawMainMode(app, canvas):
@@ -582,23 +424,17 @@ def drawMainMode(app, canvas):
                 text = f"{app.currentDayName}, {app.currentDay}", 
                 font = 'Arial 30 bold', fill = 'black')
 
-
 def drawYearChart(app, canvas):
     #DRAW YEAR CHART
     canvas.create_rectangle(50, 50, app.yearChartX, app.yearChartY, 
                             fill = 'white')
     #Draw yearly calendar
-    #from CMU course notes about drawing a grid:
-    #https://www.cs.cmu.edu/~112/notes/notes-animations-part1.html#exampleGrids
-    #some code is modified
+    #grid code modified from: https://www.cs.cmu.edu/~112/notes/notes-animations-part1.html#exampleGrids
     for row in range(app.rows):
         for col in range(app.cols):
             (x0, y0, x1, y1) = getCellBounds(app, row, col)
             fill = "white" if (app.selection == (row, col)) else "white"
-            #fill = 'white'
             canvas.create_rectangle(x0, y0, x1, y1, fill=fill)
-    #canvas.create_text(app.width/2, app.height/2 - 15, text="Click in cells!",
-                       #font="Arial 26 bold", fill="darkBlue")
 
 def drawHorizonAndSun(app, canvas):
     drawHorizon(app, canvas)
@@ -618,11 +454,7 @@ def drawHorizon(app, canvas):
                         width = 5, fill = 'orangeRed')
 
 def drawSun(app, canvas):
-        #think of some cool designs!
-        #remember to draw shadows for objects on land - to increase realism
-        #Add flying birds too! just black birds flapping across the horizon 
-        #in the distance
-    m1, m2 = app.rSun/16, app.rSun/3.5
+    m1, m2 = app.width/160, app.width/35
     cx, cy, r = app.cxSun, app.cySun, app.rSun
     canvas.create_arc(cx-r-m2, cy-r-m2, cx+r+m2, cy+r+m2, start=0, 
                                 extent=180, fill='darkOrange', 
@@ -643,15 +475,7 @@ def drawSun(app, canvas):
                                 extent=180-30*2, fill='lightYellow', style='chord',
                                 outline = 'lightYellow')
 
-#note: change path to be a curved path
-#maybe even 3-d, going up and down?
 def drawPath(app, canvas):
-    #left side
-    #canvas.create_line(app.width/2 - 10, app.height/2+2.5, app.width/3.5,
-                         #app.height, width = 5, smooth = True)
-    #right side
-    #canvas.create_line(app.width/2 + 10, app.height/2+2.5, app.width - 
-                        #app.width/3.5, app.height, width = 5, smooth = False)
     x1,y1,x2,y2,x3,y3,x4,y4 = (app.x1,app.y1,app.x2,
                          app.y2,app.x3,app.y3,app.x4,app.y4)
     canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'peru')
@@ -672,26 +496,18 @@ def drawWeeklySummaryButton(app, canvas):
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     canvas.create_rectangle(x2-100,y1,x2,y1+100, fill = 'orange')
 
-#idea inspired by Wordle: http://www.wordle.net/create
-#idea was brought up in meeting with TP mentor (Elena)
-
-
-
 def drawTrees(app,canvas):
     #maybe use recursion to draw a cool design
     pass
 
-#Year mode: year chart at corner(?) of main mode expands to show 
+#Year mode: year chart at corner of main mode expands to show 
 #the progress made in the entire year
 def drawYearMode(app, canvas):
     pass
-            #if app.mode = 'year':
-               # app.isYear = True
 
-#from CMU course notes about drawing a grid:
-#https://www.cs.cmu.edu/~112/notes/notes-animations-part1.html#exampleGrids
-#I modified some code such as the parameters and 
-#how the graph expands together with the year chart page
+
+#pointInGrid(app, x, y) and getCell(app, x, y) and getCellBounds(app, row, col)
+# modified from: https://www.cs.cmu.edu/~112/notes/notes-animations-part1.html#exampleGrids
 def pointInGrid(app, x, y):
     # return True if (x, y) is inside the grid defined by app.
     return ((app.margin <= x <= app.width-app.margin) and
@@ -706,10 +522,6 @@ def getCell(app, x, y):
     gridHeight = app.height - 2*app.margin
     cellWidth  = gridWidth / app.cols
     cellHeight = gridHeight / app.rows
-
-    # Note: we have to use int() here and not just // because
-    # row and col cannot be floats and if any of x, y, app.margin,
-    # cellWidth or cellHeight are floats, // would still produce floats.
     row = int((y - app.margin) / cellHeight)
     col = int((x - app.margin) / cellWidth)
 
@@ -728,7 +540,7 @@ def getCellBounds(app, row, col):
     y1 = app.margin + (row+1) * cellHeight
     return (x0, y0, x1, y1)
 
-
+#draws bar chart for moods of each day
 def drawBarChart(app,canvas):
     moodDict = getMoodNumbersWeek(app)
     barX = 300
@@ -743,15 +555,23 @@ def drawBarChart(app,canvas):
             y1 = y0 + happy*fraction, 
             y2 = y0 + (happy+sad)*fraction, 
             y3 = y0 + (happy+sad+angry)*fraction
-            canvas.create_rectangle(x0, y0, x1, y1, fill ='yellow')
+            canvas.create_rectangle(x0, y0, x1, y1, fill ='yellow', line = 10)
             canvas.create_rectangle(x1, y1, x0, y2, fill ='cornflowerBlue')
             canvas.create_rectangle(x0, y2, x1, y3, fill ='crimson')
             canvas.create_text(x0+(x1-x0)/2, y3 + 20, text = day[:3], font = 'Arial 20')
         barX += ((800-80*7)/6 + 80)
 
+def drawSplashPage(app, canvas):
+        canvas.create_text(app.width/2, 250, text='"Life moves pretty fast.', font='Krungthep 35')
+        canvas.create_text(app.width/2, 300, text='If you don’t stop and look', font='Krungthep 25')
+        canvas.create_text(app.width/2, 350, text='around once in a while,', font = 'Krungthep 25')
+        canvas.create_text(app.width/2, 400, text=' you could miss it."', font='Krungthep 50')
+        canvas.create_text(app.width/2, 500, text='Click anywhere to begin!', font='Arial 20')
 
 def redrawAll(app, canvas):
-    if app.mode == 'day':
+    if app.mode == 'splash':
+        drawSplashPage(app, canvas)
+    elif app.mode == 'day':
         drawDayMode(app, canvas)
         drawWeeklySummaryButton(app, canvas)
     elif app.mode == 'daily summary':
