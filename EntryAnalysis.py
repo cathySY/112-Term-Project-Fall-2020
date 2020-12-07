@@ -35,7 +35,7 @@ Sunday = daysOfWeek()
 '''
 
 def oneDayMoodAnalysis(app,day):
-    entry = app.dayEntry.split()
+    entry = app.fileContents.split()
     for word in entry:
         if word != '':
             if word in happyWords:
@@ -87,6 +87,9 @@ def createDayObjectsInWeek():
     days = getWeek()
     for day in days:
         day = dayMoods()
+
+def createFiles():
+    pass
 
 #print(str(datetime.datetime.now().date()))
 #print(str(datetime.datetime.now().date()))

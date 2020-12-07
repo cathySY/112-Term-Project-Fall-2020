@@ -10,12 +10,13 @@
 import cs112_f20_week7_linter
 import math, copy, random, string, calendar
 from datetime import datetime
-
 #from other TP files of mine
 from Usefulwords import *
 from EntryAnalysis import *
 from wordcloud import *
 from journalEntriesSaved import *
+import os
+THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 #from perspective import *
 #import perspective 
 import EntryAnalysis
@@ -43,15 +44,18 @@ def make2dList(rows, cols, string):
     return [ ([emptyColor] * cols) for row in range(rows) ]
 
 def appStarted(app):
-    app.mode = 'weekly summary'
+    app.mode = 'day'
     app.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday']
     app.weekDates = getWeek()
     #app.weekDates = createDayObjectsInWeek()
     app.currentDay = str(datetime.datetime.now().date())
-    #app.index = app.weekDates.index(app.currentDay)
-    app.dayEntry = readFile(EntriesText/f'{app.currentDay}-text.py')
-    app.maxLineLength = 100
+    #app.index = app.weekDates.index(app.currentDay)\
+    #print(f'{app.currentDay}-text.txt')
+    app.maxLineLength = 20
+    app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
+    app.dayEntry = splitString(app,app.fileContents)
+    print(app.dayEntry)
     app.letterPosition = [app.height/8*2 + 20]
     app.textY = (app.height/8)*2 - app.height/50
     app.lineY = (app.height/8)*2
@@ -103,6 +107,20 @@ def appStarted(app):
     app.mainCentred = True
     #app.prep = prepositions
 
+def splitString(app,string):
+    string = string
+    listOfStrings = []
+    while len(string) >= app.maxLineLength:
+        listOfStrings += [string[:app.maxLineLength]]
+        string = string[app.maxLineLength:]
+    listOfStrings += [string]
+    return listOfStrings
+
+def listToString(app,list):
+    lst = ''
+    for string in list:
+        lst += string
+    return lst
 
 def resetAll(app):
     app.mode = 'main'
@@ -176,20 +194,35 @@ def keyPressed(app, event):
         #enter main mode
         if event.key == 'Enter':
             app.mode = 'main'
-            writeFile(EntriesText/f'{app.currentDay}-text.py',app.dayEntry)
+            contents = listToString(app,app.fileContents)
+            writeFile(f'Entries/{app.currentDay}-text.txt',contents)
             #weekEntries[app.index] = app.dayEntry
             #print(weekEntries)
         #if current text string is too long/exceeds length of underline
-        if len(app.dayEntry) >= app.maxLineLength:
+        if len(app.dayEntry[-1]) >= app.maxLineLength:
             #create new empty string
             app.dayEntry += ['']
             app.moveTextAndLine = True
         if event.key == 'Space':
-            app.dayEntry += ' '
+            if len(app.dayEntry) >= 2:
+                if len(app.dayEntry[-2]) < app.maxLineLength:
+                    app.dayEntry[-2] += ' '
+                else:
+                    app.dayEntry[-1] += ' '
+            else:
+                app.dayEntry[-1] += ' '
         elif event.key == 'Delete':
-            app.dayEntry = app.dayEntry[:-1]
+            if app.dayEntry[-1] == '':
+                app.dayEntry[-2] = app.dayEntry[-2][:-1]
+            app.dayEntry[-1] = app.dayEntry[-1][:-1]
         elif event.key in string.printable:
-            app.dayEntry += event.key
+            if len(app.dayEntry) >= 2:
+                if len(app.dayEntry[-2]) < app.maxLineLength:
+                    app.dayEntry[-2] += event.key
+                else:
+                    app.dayEntry[-1] += event.key
+            else: 
+                app.dayEntry[-1] += event.key
     elif app.mode == 'year':
         pass
 '''       
@@ -413,11 +446,12 @@ def drawDayMode(app, canvas):
     textX = app.width/2
     for n in range(len(app.dayEntry[:-1])):
         textY = (app.height/8)*2 - app.height/50 + lineSpacing*n
-        canvas.create_text(textX, textY, text = app.dayEntry, 
+        canvas.create_text(textX, textY, text = app.dayEntry[n], 
                                     font = 'Arial 20')
-    canvas.create_text(textX, app.textY, text = app.dayEntry, 
+    canvas.create_text(textX, app.textY, text = app.dayEntry[-1], 
                                 font = 'Arial 20')
     drawDefaultDayText(app, canvas)
+
 
 #draws the default text:
 #1. date
