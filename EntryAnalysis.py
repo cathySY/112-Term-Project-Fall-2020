@@ -2,7 +2,7 @@ from Usefulwords import *
 #from datetime 
 import datetime
 import calendar
-from journalEntriesSaved import *
+from fileFunctions import *
 
 
 class dayMoods(object):
@@ -35,12 +35,12 @@ def listToString(app,list):
     return lst
 
 def oneDayMoodAnalysis(app,day):
-    print(day)
-    print(app.dayNames)
     index = app.dayNames.index(str(day))
     date = app.weekDates[index]
-    contents = readFile(f'Entries/{date}-text.txt')
-    #contents = listToString(app,app.dayEntry)
+    if str(day) != app.currentDayName:
+        contents = readFile(f'Entries/{date}-text.txt')
+    else:
+        contents = listToString(app,app.dayEntry)
     words = contents.split()
     for word in words:
         if word != '':
@@ -50,7 +50,7 @@ def oneDayMoodAnalysis(app,day):
                 day.addSadWord()
             elif (word in angryWords) or (word[:-1] in angryWords):
                 day.addAngryWord()
-    return (day.happy, day.sad, day.angry)
+    return [day.happy, day.sad, day.angry]
 
 #todayDate = datetime.datetime.now().date()
 #print(todayDate)
@@ -84,8 +84,8 @@ def drawWeeklyAnalysisText(app,canvas,day):
 
 
 def drawWeeklySummary(app, canvas):
-    day = dayMoods('day')
-    #oneDayMoodAnalysis(app,day.date)
+    day = dayMoods(app.currentDayName)
+    oneDayMoodAnalysis(app,day)
     margin = app.height/8
     popupColor = 'mintCream'
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
@@ -98,7 +98,6 @@ def getMoodNumbersWeek(app):
     moodDict = {}
     for day in app.dayNames:
         moodDict[day] = getMoodNumbersDay(app, day)
-    print(moodDict)
     return moodDict
 
 def getMoodNumbersDay(app, day):

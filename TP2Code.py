@@ -14,7 +14,7 @@ from datetime import datetime
 from Usefulwords import *
 from EntryAnalysis import *
 from wordcloud import *
-from journalEntriesSaved import *
+from fileFunctions import *
 import os
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 #from perspective import *
@@ -43,8 +43,74 @@ def make2dList(rows, cols, string):
     emptyColor = string
     return [ ([emptyColor] * cols) for row in range(rows) ]
 
+
+
 def appStarted(app):
-    app.mode = 'weekly summary'
+    app.mode = 'main'
+    app.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
+                'Saturday', 'Sunday']
+    app.weekDates = getWeek()
+    #app.weekDates = createDayObjectsInWeek()
+    app.currentDay = str(datetime.datetime.now().date())
+    app.currentDayName = calendar.day_name[datetime.datetime.now().date().weekday()]
+    app.index = app.weekDates.index(app.currentDay)
+    #print(f'{app.currentDay}-text.txt')
+    app.maxLineLength = 100
+    app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
+    app.dayEntry = splitString(app,app.fileContents)
+    app.letterPosition = [app.height/8*2 + 20]
+    app.textY = (app.height/8)*2 - app.height/50
+    app.lineY = (app.height/8)*2
+    app.lineMoveCount = 0
+    app.dLine = 5
+    app.moveTextAndLine = False
+    app.textDict = {}
+    app.yearChartX, app.yearChartY = app.width/5, app.height/3
+    #from CMU course notes about drawing a grid:
+    #https://www.cs.cmu.edu/~112/notes/notes-animations-part1.html#exampleGrids
+    #I modified the parameters
+    app.rows = 3
+    app.cols = 4
+    app.margin = 100 # margin around grid
+    app.selection = (-1, -1) # (row, col) of selection, (-1,-1) for none
+    ### Circle
+    app.hDistCovered = 0
+    app.hR, app.hFrameCircum = app.height/2, app.width
+    app.hTotalCircum = 2*math.pi*app.hR*10
+    app.hTotalArea = math.pi * (app.hR)**2
+    ###
+    app.cxSun, app.cySun, app.rSun = (app.width/2, 
+                                app.height/2, app.width/10)
+    app.dMove = 150
+    app.dragging = False
+    app.getX = 0
+    app.getY = 0
+    app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4 = (
+                        app.width/2 - 40,
+                        app.height/2+2.5, 
+                        app.width/5,
+                        app.height, 
+                        app.width - app.width/5, 
+                        app.height,
+                        app.width/2 + 40, 
+                        app.height/2+2.5)
+    app.bx1,app.by1,app.bx2,app.by2,app.bx3,app.by3,app.bx4,app.by4 = (
+                        -app.width*3, #x
+                        app.height/2+2.5, 
+                        -900, #x
+                        app.height, 
+                        -900  + app.width*3/5, #x
+                        app.height,
+                        -app.width*3 + 80, #x
+                        app.height/2+2.5)
+    app.povLeft = app.width
+    app.backPath = False
+    app.theta = 0
+    app.mainCentred = True
+    app.timeLastSaved = ['Not saved yet']*7
+
+def resetAll(app):
+    app.mode = 'daily summary'
     app.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday']
     app.weekDates = getWeek()
@@ -106,7 +172,7 @@ def appStarted(app):
     app.theta = 0
     app.mainCentred = True
     app.timeLastSaved = ['Not saved yet']*7
-    #app.prep = prepositions
+
 
 def splitString(app,string):
     string = string
@@ -189,6 +255,8 @@ def keyPressed(app, event):
         #enter week mode
         if event.key == 'w':
             app.mode = 'week'
+        elif event.key == 'Space':
+            app.mode = 'weekly summary'
         elif event.key == 'd':
             app.mode = 'day'
         elif event.key == 'Up':
@@ -198,7 +266,7 @@ def keyPressed(app, event):
                 app.currentDay = app.weekDates[app.index]
                 app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
                 app.dayEntry = splitString(app,app.fileContents)
-                print(app.index,app.fileContents)
+                app.rSun += 20
         elif event.key == 'Down':
             if (app.index >= 1) and (app.index <= len(app.weekDates)-1):
                 app.index -= 1
@@ -206,7 +274,8 @@ def keyPressed(app, event):
                 app.currentDay = app.weekDates[app.index]
                 app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
                 app.dayEntry = splitString(app,app.fileContents)
-                print(app.index,app.fileContents)
+                #sun gets bigger
+                app.rSun += -20
     elif app.mode == 'day':
         #enter main mode
         if event.key == 'Enter':
@@ -244,11 +313,12 @@ def keyPressed(app, event):
                     app.dayEntry[-1] += event.key
             else: 
                 app.dayEntry[-1] += event.key
+    elif app.mode == 'daily summary':
+        if event.key == 'Enter':
+            app.mode = 'main'
     elif app.mode == 'weekly summary':
         if event.key == 'Enter':
             app.mode = 'main'
-    elif app.mode == 'year':
-        pass
 '''       
 def oneDayMoodAnalysis(app,canvas,day):
     for word in app.dayEntry:
@@ -268,7 +338,7 @@ def saveFile(app):
     writeFile(f'Entries/{app.currentDay}-text.txt',contents)
 
 def timerFired(app):
-    getMoodNumbersWeek(app)
+    #getMoodNumbersWeek(app) = this result is so beautiful! :D
     #moves text and line downwards at the same pace until a new line is reached
     if app.moveTextAndLine == True:
         app.lineY += app.dLine
@@ -288,7 +358,7 @@ def timerFired(app):
             #app.width/5, app.height/3
             app.yearChartX -= 50
             app.yearChartY -= 25
-    if app.mode == 'weekly summary':
+    if app.mode == 'daily summary':
         pass
         #oneDayMoodAnalysis(app,today)
 
@@ -305,11 +375,6 @@ def mouseDragged(app, event):
         app.mainCentred = True
     app.mainCentred = False
     
-    '''
-    if app.cxSun == app.width/2 + app.hTotalCircum/4:
-        app.x1,app.y1,app.x2,app.y2 = -1,-1,-1,-1
-        print(app.cxSun)
-        '''
     #how much the cursor is dragged in x-direction
     #positive or negative
     xdiff = (app.getX - event.x)
@@ -317,10 +382,11 @@ def mouseDragged(app, event):
     app.theta %= 2*math.pi
     #first quadrant:
     #app.povLeft %= app.hTotalCircum
+    app.cxSun -= xdiff
     if ((app.theta >= 0 and app.theta < math.pi/2) 
         or (app.theta >= math.pi*3/2 and app.theta < math.pi*2)):
         app.backPath = False
-        app.cxSun -= xdiff
+        #app.cxSun -= xdiff
         #app.cxSun %= app.hTotalCircum
         #TRAPEZIUM OF PATH
             #shift angles
@@ -340,7 +406,7 @@ def mouseDragged(app, event):
     #second quadrant 
     if (app.theta >= math.pi/2 and app.theta < math.pi*3/2):
         app.backPath = True
-        app.cxSun -= xdiff
+        #app.cxSun -= xdiff
         #TRAPEZIUM OF PATH
             #shift angles
         app.bx1 -= xdiff
@@ -418,8 +484,8 @@ def mousePressed(app, event):
     #x2-100,y1,x2,y1+100
     if app.mode == 'day':
         if (x2-100 < event.x < x2) and (y1 < event.y < y1+100):
-            app.mode = 'weekly summary'
-    elif app.mode == 'weekly summary':
+            app.mode = 'daily summary'
+    elif app.mode == 'daily summary':
         if (x2-100 < event.x < x2) and (y1 < event.y < y1+100):
             app.mode = 'day'
     #DRAW YEAR CHART
@@ -473,6 +539,7 @@ def drawDayMode(app, canvas):
         #text moves down as text length exceeds line length
     lineSpacing = 40
     textX = app.width/2
+    print(app.dayEntry)
     for n in range(len(app.dayEntry[:-1])):
         textY = (app.height/8)*2 - app.height/50 + lineSpacing*n
         canvas.create_text(textX, textY, text = app.dayEntry[n], 
@@ -661,63 +728,39 @@ def getCellBounds(app, row, col):
     y1 = app.margin + (row+1) * cellHeight
     return (x0, y0, x1, y1)
 
-'''
-class daysOfWeek(object):
-    def __init__(self):
-        self.happy = 0 
-        self.sad = 0
-        self.angry = 0
-    def addHappyWord(self):
-        self.happy += 1
-        return
-    def addSadWord(self):
-        self.sad += 1
-        return
-    def addAngryWord(self):
-        self.angry += 1
-        return
-    def printAnalysis(self):
-        return (f'# of happy words = {self.happy} \n # of sad words = {self.sad} \n # of angry words = {self.angry}')
 
+def drawBarChart(app,canvas):
+    moodDict = getMoodNumbersWeek(app)
+    barX = 300
+    for day in moodDict:
+        moodNums = moodDict[day]
+        sumOfNums = sum(moodNums)
+        if sumOfNums > 0:
+            happy, sad, angry = moodNums[0], moodNums[1], moodNums[2]
+            fraction = 200/sumOfNums
+            x0,x1 = barX, barX+80
+            y0 = 200
+            y1 = y0 + happy*fraction, 
+            y2 = y0 + (happy+sad)*fraction, 
+            y3 = y0 + (happy+sad+angry)*fraction
+            canvas.create_rectangle(x0, y0, x1, y1, fill ='yellow')
+            canvas.create_rectangle(x1, y1, x0, y2, fill ='cornflowerBlue')
+            canvas.create_rectangle(x0, y2, x1, y3, fill ='crimson')
+            canvas.create_text(x0+(x1-x0)/2, y3 + 20, text = day[:3], font = 'Arial 20')
+        barX += ((800-80*7)/6 + 80)
 
-def oneDayMoodAnalysis(app,day):
-    entry = app.dayEntry[0].split()
-    print(entry)
-    for word in entry:
-        if word != '':
-            if word in happyWords:
-                day.addHappyWord()
-            elif word in sadWords:
-                day.addSadWord()
-            elif word in angryWords:
-                day.addAngryWord()
-        #entry.remove(word)
-            
-
-def drawWeeklyAnalysisText(app,canvas,day):
-    text = day.printAnalysis()
-    canvas.create_text(app.width/2, app.height/2, text = text, font = 'Arial 40 bold')
-
-def drawWeeklySummary(app, canvas):
-    today = daysOfWeek()
-    margin = app.height/8
-    popupColor = 'mintCream'
-    x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
-    #draw popup
-    canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor)
-    drawWeeklyAnalysisText(app,canvas,today)
-    '''
 
 def redrawAll(app, canvas):
     if app.mode == 'day':
         drawDayMode(app, canvas)
         drawWeeklySummaryButton(app, canvas)
-    if app.mode == 'weekly summary':
+    elif app.mode == 'daily summary':
         drawWeeklySummary(app, canvas)
         drawWeeklySummaryButton(app, canvas)
+    elif app.mode == 'weekly summary':
+        drawBarChart(app,canvas)
     elif app.mode == 'main':
         drawMainMode(app, canvas)
-        
     elif app.mode == 'year' or app.mode == 'main':
         drawMainMode(app, canvas)
         drawYearMode(app, canvas)

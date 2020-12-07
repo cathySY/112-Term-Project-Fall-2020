@@ -7,7 +7,11 @@ def helper(string):
 
 # most synonyms
 # taken from https://www.thesaurus.com/browse/happy
-rawHappy = '''happy
+rawHappy = '''
+:)
+:D
+:-)
+happy
 haha
 ha
 hahaha
@@ -17,6 +21,10 @@ HA
 HAHAHA
 HAHAHAHA
 LOL
+lol
+lmao
+Lol
+LMAO
 awesome
 cool
 amazing
@@ -66,7 +74,11 @@ tickled
 
 #from https://www.thesaurus.com/browse/sad?s=t
 rawSad = '''
+:(
+:-(
 sad
+sucks
+depressed
 bitter
 dismal
 heartbroken
@@ -108,7 +120,8 @@ woebegone
 '''
 
 #from https://www.thesaurus.com/browse/angry?s=t
-rawAngry = '''angry
+rawAngry = '''>:(
+angry
 rage
 hate
 sulked
