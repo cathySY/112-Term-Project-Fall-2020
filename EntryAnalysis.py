@@ -1,7 +1,7 @@
 from Usefulwords import *
 #from datetime 
 import datetime
-import calendar
+import calendar,string
 from fileFunctions import *
 
 
@@ -26,7 +26,6 @@ class dayMoods(object):
         return (self.happy, self.sad, self.angry)
     def __repr__(self):
         return f'{self.date}'
-        #,{self.happy}, {self.sad}, {self.angry}'
 
 def listToString(app,list):
     lst = ''
@@ -34,6 +33,7 @@ def listToString(app,list):
         lst += string
     return lst
 
+#returns a list of all the no of times a mood word appears for each mood
 def oneDayMoodAnalysis(app,day):
     index = app.dayNames.index(str(day))
     date = app.weekDates[index]
@@ -52,9 +52,6 @@ def oneDayMoodAnalysis(app,day):
                 day.addAngryWord()
     return [day.happy, day.sad, day.angry]
 
-#todayDate = datetime.datetime.now().date()
-#print(todayDate)
-#print(calendar.day_name[todayDate.weekday()])
 
 #datetime learnt from https://www.dataquest.io/blog/python-datetime-tutorial/
 def getWeek():
@@ -74,9 +71,6 @@ def createDayObjectsInWeek():
 
 createDayObjectsInWeek()
 
-def createFiles():
-    pass
-
 #prints the text
 def drawWeeklyAnalysisText(app,canvas,day):
     text = day.printAnalysis()
@@ -87,27 +81,75 @@ def drawWeeklySummary(app, canvas):
     day = dayMoods(app.currentDayName)
     oneDayMoodAnalysis(app,day)
     margin = app.height/8
-    popupColor = 'white'
+    popupColor = 'mintCream'
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     #draw popup
     canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor) 
     drawWeeklyAnalysisText(app,canvas,day)
 
-
+#returns a dictionary with each key mapping to a list of frequencies of mood words
 def getMoodNumbersWeek(app):
     moodDict = {}
     for day in app.dayNames:
         moodDict[day] = getMoodNumbersDay(app, day)
     return moodDict
 
+#helper function
 def getMoodNumbersDay(app, day):
     day = dayMoods(day)
     return oneDayMoodAnalysis(app,day)
 
+#returns a long string of all the words in the 7 daily entries
+def combineFiles():
+    weekDates = getWeek()
+    combinedString = ''
+    for date in weekDates:
+        entry = readFile(f'Entries/{date}-text.txt')
+        combinedString += entry
+    return combinedString
+
+#returns a dictionary for useful words in all the entries + their frequencies
+def textAnalysis():
+    wordsDict = {}
+    combinedText = combineFiles()
+    words = combinedText.split()
+    for word in words:
+        if word in notUseful:
+            combinedText.replace(word, " ")
+        elif word in wordsDict:
+            wordsDict[word] += 1
+        else:
+            wordsDict[word] = 1
+    return wordsDict
 
 
+def getMostFrequentWords(dictionary):
+    words = []
+    numbers = []
+    #put key and values into separate lists
+    for key in dictionary:
+        words += [key]
+        numbers += [dictionary[key]]
+    newWords = []
+    #combines a word with its frequency number in order to use .sort
+    for i in range(len(words)):
+        newWord = str(numbers[i]) + words[i]
+        newWords += [newWord]
+    newWords.sort()
+    mostFrequent = newWords[-5:]
+    word = ''
+    listOfWords = []
+    #remove numbers
+    for newWord in newWords[-5:]:
+        splitString = list(newWord)
+        for char in splitString:
+            if char in string.ascii_letters:
+                word += char
+        listOfWords.append(word)
+        word = ''
+    return listOfWords
 
-#print(str(datetime.datetime.now().date()))
-#print(str(datetime.datetime.now().date()))
-
+def overallAnalysis():
+    wordsDict = textAnalysis()
+    return getMostFrequentWords(wordsDict)
 

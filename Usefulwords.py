@@ -1,12 +1,9 @@
 #splits each long string into into strings of words
 def helper(string):
     newList = string.split()
-   # for word in lst:
-        #newList += word
     return newList
 
-# most synonyms
-# taken from https://www.thesaurus.com/browse/happy
+# most synonyms copied from https://www.thesaurus.com/browse/happy
 rawHappy = '''
 :)
 :D
@@ -72,7 +69,7 @@ sunny
 tickled
 '''
 
-#from https://www.thesaurus.com/browse/sad?s=t
+#copied from https://www.thesaurus.com/browse/sad?s=t
 rawSad = '''
 :(
 :-(
@@ -119,7 +116,7 @@ weeping
 woebegone
 '''
 
-#from https://www.thesaurus.com/browse/angry?s=t
+#copied from https://www.thesaurus.com/browse/angry?s=t
 rawAngry = '''>:(
 angry
 rage
@@ -187,6 +184,8 @@ sadWords = helper(rawSad)
 #sadWords.extend(['feeling down','down in the dumps','in doldrums','in grief','in the dumps','out of sorts'])
 angryWords = helper(rawAngry)
 
+
+#most words copied from: https://www.englishclub.com/grammar/prepositions-list.htm
 rawNotUseful = '''
 aboard
 about
@@ -258,11 +257,24 @@ via
 with
 within
 without
+a
+an
+the 
+those
+he 
+she 
+I 
+her
+him
+his 
+her
+they
+them
+their
+that
 '''
-
-rawArticles = "a,an,the,those"
 
 
 notUseful = helper(rawNotUseful)
-articles = helper(rawArticles)
+
 
