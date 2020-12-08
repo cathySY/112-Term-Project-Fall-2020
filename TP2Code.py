@@ -97,6 +97,7 @@ def appStarted(app):
                         app.height/2+2.5)
     app.povLeft = app.width
     app.backPath = False
+    app.frontPath = True
     app.theta = 0
     app.mainCentred = True
     app.timeLastSaved = ['Not saved yet']*7
@@ -149,13 +150,13 @@ def resetAll(app):
     app.getX = 0
     app.getY = 0
     app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4 = (
-                        app.width/2 - 40,
+                        app.width/2 - 30,
                         app.height/2+2.5, 
                         app.width/5,
                         app.height, 
                         app.width - app.width/5, 
                         app.height,
-                        app.width/2 + 40, 
+                        app.width/2 + 30, 
                         app.height/2+2.5)
     app.bx1,app.by1,app.bx2,app.by2,app.bx3,app.by3,app.bx4,app.by4 = (
                         -app.width*3, #x
@@ -281,7 +282,6 @@ def timerFired(app):
             app.dayChX2 += 38
             app.dayChY2 += 10
         else:
-            print('timerFired(app): day')
             app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2 = 597.5,400,797.5,600
             app.mode = 'day'
 
@@ -290,83 +290,69 @@ def timerFired(app):
 
 def mouseDragged(app, event):
     app.dragging = True
-    '''
-    if     app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4 = (
-                        app.width/2 - 40,
-                        app.height/2+2.5, 
-                        app.width/5,
-                        app.height, 
-                        app.width - app.width/5, 
-                        app.height,
-                        app.width/2 + 40, 
-                        app.height/2+2.5):
-        app.mainCentred = True
-    app.mainCentred = False
-    '''
         
     #how much the cursor is dragged in x-direction
     #can be positive or negative
     xdiff = (app.getX - event.x)
-    app.theta += xdiff/app.hTotalCircum * (math.pi*2)
+    app.theta -= xdiff/app.hTotalCircum * (math.pi*2)
     app.theta %= 2*math.pi
     #print(app.theta)
     #first quadrant:
     #app.povLeft %= app.hTotalCircum
     app.cxSun -= xdiff
     app.cxSun %= app.hTotalCircum
-    if ((app.theta >= 0 and app.theta < math.pi/2) 
-        or (app.theta >= math.pi*3/2 and app.theta < math.pi*2)):
-        #print('yes')
-        app.backPath = False
-        #app.cxSun -= xdiff
-        #app.cxSun %= app.hTotalCircum
-        #TRAPEZIUM OF PATH
-            #shift angles
-        app.x1 -= xdiff
-        app.x4 -= xdiff
-        app.x2 -= xdiff*1/4
-        app.x3 -= xdiff*1/4
+    app.x1 -= xdiff
+    app.x4 -= xdiff
+    app.x2 -= xdiff*1/4
+    app.x3 -= xdiff*1/4
+    
+    if ((app.theta >= 0 and app.theta < math.pi/2) or (app.theta >= math.pi*3/2 
+            and app.theta < math.pi*2)):
+        print('1: ', app.theta)
         app.x1 %= app.hTotalCircum
         app.x2 %= app.hTotalCircum*1/4
         app.x3 %= app.hTotalCircum*1/4
         app.x4 %= app.hTotalCircum 
-
-        '''
-            #shift x
-        #if (app.povLeft < app.width - app.hTotalCircum/5 and 
-                #app.povLeft > app.width - app.hTotalCircum/4):
-            #app.x2 -= xdiff*8
-            #app.x3 -= xdiff*8
-
-            #app.x2 %= app.hTotalCircum
-            #app.x3 %= app.hTotalCircum
-            '''
+        if ((app.theta > 4 and app.theta < 5.5)):
+            app.frontPath = False
+            app.backPath = True
+        else:
+            app.frontPath = True
+            app.backPath = False
     #second quadrant 
-    elif (app.theta >= math.pi/2 and app.theta < math.pi*3/2):
-        app.backPath = True
-        print('app.x4: ',app.x4)
-        print('app.theta: ',app.theta)
+    if ((app.theta >= math.pi/2 and app.theta < math.pi*3/2)): 
+    #and ((app.theta > 1.5 and app.theta < 4.7)==False)):
+        print('2: ',app.theta)
+        if (app.theta > 3 and app.theta < 4.7):  
+            app.frontPath = True
+            app.backPath = False
+        else:
+            print('true')
+            app.frontPath = False
+            app.backPath = True
         #app.cxSun -= xdiff
         #TRAPEZIUM OF PATH
             #shift angles
-        app.x1 -= xdiff
-        app.x4 -= xdiff
         app.bx1 -= xdiff
         app.bx4 -= xdiff
-        app.x2 -= xdiff*1/4
-        app.x3 -= xdiff*1/4
         app.bx2 -= xdiff*1/4
         app.bx3 -= xdiff*1/4
         app.x1 %= app.hTotalCircum
         app.x2 %= app.hTotalCircum*1/4
         app.x3 %= app.hTotalCircum*1/4
         app.x4 %= app.hTotalCircum 
+        #print('app.x1: ',app.bx1)
+        #print('app.x2: ',app.bx2)
+        #print('app.x3: ',app.bx3)
+        #print('app.x4: ',app.bx4)
+        
         
         app.bx1 %= app.hTotalCircum
         app.bx2 %= app.hTotalCircum*1/4
         app.bx3 %= app.hTotalCircum*1/4
-        app.bx4 %= app.hTotalCircum      
-       
+        app.bx4 %= app.hTotalCircum    
+
+
     
                 #app.bx1 %= app.hTotalCircum
             #app.bx4 %= app.hTotalCircum
@@ -491,9 +477,10 @@ def drawDefaultDayText(app, canvas):
 #Main mode: draw a sunset and a path leading to it
 def drawMainMode(app, canvas):
     drawHorizonAndSun(app, canvas)
-    drawPath(app, canvas)
+    if app.frontPath == True:
+        drawPath(app, canvas)
     if app.backPath == True:
-        drawBackPath(app,canvas)
+        drawBackPath(app,canvas) 
     drawTrees(app, canvas)
     drawDailyButtons(app,canvas)
     drawYearChart(app, canvas)
@@ -706,7 +693,6 @@ def getMostFrequentMood(app):
         angryN += moodDict[day][2]
     maxNum = max(happyN, sadN, angryN)
     for i in range(3):
-        print('y')
         if ((happyN, sadN, angryN)[i] == maxNum) and (moods[i] not in app.weekMainMood):
             app.weekMainMood += moods[i]
             app.weekMainMood += ' '
