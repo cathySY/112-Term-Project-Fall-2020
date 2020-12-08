@@ -330,6 +330,7 @@ def mouseDragged(app, event):
         app.x2 %= app.hTotalCircum*1/4
         app.x3 %= app.hTotalCircum*1/4
         app.x4 %= app.hTotalCircum 
+
         '''
             #shift x
         #if (app.povLeft < app.width - app.hTotalCircum/5 and 
@@ -350,7 +351,6 @@ def mouseDragged(app, event):
             #shift angles
         app.x1 -= xdiff
         app.x4 -= xdiff
-
         app.bx1 -= xdiff
         app.bx4 -= xdiff
         app.x2 -= xdiff*1/4
