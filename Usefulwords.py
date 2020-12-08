@@ -1,10 +1,13 @@
 #splits each long string into into strings of words
 def helper(string):
     newList = string.split()
+    newList = set(newList)
+    newList = list(newList)
     return newList
 
 # most synonyms copied from https://www.thesaurus.com/browse/happy
 rawHappy = '''
+satisfied
 :)
 :D
 :-)
@@ -18,6 +21,7 @@ HA
 laugh
 laughed
 fun
+great
 celebrated
 celebrate
 HAHAHA
@@ -75,6 +79,7 @@ playful
 sparkling
 sunny
 tickled
+pleasant
 '''
 
 #copied from https://www.thesaurus.com/browse/sad?s=t
@@ -123,6 +128,10 @@ pensive
 troubled
 weeping
 woebegone
+cry
+cried
+tears
+unpleasant
 '''
 
 #copied from https://www.thesaurus.com/browse/angry?s=t
@@ -281,12 +290,15 @@ they
 them
 their
 that
+my 
+and
+it
 '''
 
 
 notUseful = helper(rawNotUseful)
 """ 
-
+#quotes copied from: https://www.coburgbanks.co.uk/blog/friday-funnies/50-funny-motivational-quotes/
 RawQuotes =
 [
 “People often say that motivation doesn’t last. Well, neither does bathing – that’s why we recommend it daily.” Zig Ziglar

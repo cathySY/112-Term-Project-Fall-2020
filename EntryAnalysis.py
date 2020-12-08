@@ -114,12 +114,20 @@ def textAnalysis():
     combinedText = combineFiles()
     words = combinedText.split()
     for word in words:
-        if word in notUseful:
+        word = word.lower()
+        if (word in notUseful) or (word[:-1] in notUseful) :
             combinedText.replace(word, " ")
-        elif word in wordsDict:
+        elif (word in wordsDict):
+            print(word, '1')
             wordsDict[word] += 1
+        elif (word[:-1] in wordsDict):
+            print(word[:-1])
+            wordsDict[word[:-1]] += 1
         else:
-            wordsDict[word] = 1
+            if (word[-1] in string.punctuation) and (len(word) > 1):
+                wordsDict[word[:-1]] = 1
+            else:
+                wordsDict[word] = 1
     return wordsDict
 
 
@@ -127,7 +135,7 @@ def getMostFrequentWords(dictionary):
     words = []
     numbers = []
     #put key and values into separate lists
-    for key in dictionary:
+    for key in dictionary: 
         words += [key]
         numbers += [dictionary[key]]
     newWords = []
@@ -143,7 +151,7 @@ def getMostFrequentWords(dictionary):
     for newWord in newWords[-5:]:
         splitString = list(newWord)
         for char in splitString:
-            if char in string.ascii_letters:
+            if char not in string.digits:
                 word += char
         listOfWords.append(word)
         word = ''

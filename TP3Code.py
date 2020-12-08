@@ -613,7 +613,6 @@ def drawBarChart(app,canvas):
             y1 = y0 + happy*fraction, 
             y2 = y0 + (happy+sad)*fraction, 
             y3 = y0 + (happy+sad+angry)*fraction
-            print(y1,y2,y3)
             canvas.create_rectangle(x0, y0, x1, y1, fill ='yellow', outline = 'white')
             canvas.create_rectangle(x1, y1, x0, y2, fill ='cornflowerBlue', outline = 'white')
             canvas.create_rectangle(x0, y2, x1, y3, fill ='crimson', outline = 'white')
