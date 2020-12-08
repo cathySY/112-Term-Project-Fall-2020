@@ -311,6 +311,8 @@ def timerFired(app):
             app.dayChY2 += 10
         else:
             app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2 = 597.5,400,797.5,600
+            app.textY = app.height/4+30 - app.height/50 + 40*(len(app.dayEntry)-1)
+            app.lineY = app.height/4+30 + 40*(len(app.dayEntry)-1)
             app.mode = 'day'
     if app.mode == 'weekly summary':
         getMostFrequentMood(app)
