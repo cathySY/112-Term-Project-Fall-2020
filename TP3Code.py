@@ -45,8 +45,8 @@ def appStarted(app):
     app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
     app.dayEntry = splitString(app,app.fileContents)
     app.letterPosition = [app.height/8*2 + 20]
-    app.textY = (app.height/8)*2 - app.height/50
-    app.lineY = (app.height/8)*2
+    app.textY = app.height/4+30 - app.height/50 + 40*(len(app.dayEntry)-1)
+    app.lineY = app.height/4+30 + 40*(len(app.dayEntry)-1)
     app.lineMoveCount = 0
     app.dLine = 5
     app.moveTextAndLine = False
@@ -99,7 +99,7 @@ def appStarted(app):
     app.frontPath = True
     app.theta = 0
     app.mainCentred = True
-    app.timeLastSaved = ['Not saved yet']*7
+    app.timeLastSaved = ['']*7
     app.isPopUpBox = False
     app.areLinesMoving = False 
     app.buttonColor = 'cyan'
@@ -184,7 +184,7 @@ def resetAll(app):
     app.frontPath = True
     app.theta = 0
     app.mainCentred = True
-    app.timeLastSaved = ['Not saved yet']*7
+    app.timeLastSaved = ['']*7
     app.isPopUpBox = False
     app.areLinesMoving = False 
     app.buttonColor = 'cyan'
@@ -237,7 +237,7 @@ def keyPressed(app, event):
                 app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
                 app.dayEntry = splitString(app,app.fileContents)
                 #sun gets bigger
-                app.rSun += 20
+                app.rSun += 30
         elif event.key == 'Down':
             if (app.index >= 1) and (app.index <= len(app.weekDates)-1):
                 app.trunkX += 35
@@ -250,7 +250,7 @@ def keyPressed(app, event):
                 app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
                 app.dayEntry = splitString(app,app.fileContents)
                 #sun gets smaller
-                app.rSun += -20
+                app.rSun += -30
             
     elif app.mode == 'day':
         if event.key == 'Right':
@@ -268,23 +268,17 @@ def keyPressed(app, event):
         elif event.key == 'Delete':
             #if entry is empty
             if app.dayEntry[0] == '':
-                pass
+                return
             else:
-                #if last string is empty, delete from second-last string
+                #if last string is empty, remove that string
                 if app.dayEntry[-1] == '':
-                    app.dayEntry[-2] = app.dayEntry[-2][:-1]
+                    app.dayEntry.pop()
+                    app.lineY -= 40
+                    app.textY -= 40
                 # if last string is not empty, delete from last string
                 app.dayEntry[-1] = app.dayEntry[-1][:-1]
         #add a character
         elif event.key in string.printable:
-            if len(app.dayEntry) >= 2:
-                if len(app.dayEntry[-2]) < app.maxLineLength:
-                    app.dayEntry[-2] += event.key
-                else:
-                    app.dayEntry[-1] += event.key
-            elif len(app.dayEntry[0]) < app.maxLineLength:
-                app.dayEntry[0] += event.key
-            else:
                 app.dayEntry[-1] += event.key
     elif app.mode == 'daily summary':
         if event.key == 'Left':
@@ -296,15 +290,17 @@ def saveFile(app):
     writeFile(f'Entries/{app.currentDay}-text.txt',contents)
 
 def timerFired(app):
+    app.timerDelay = 10
     #moves text and line downwards at the same pace until a new line is reached
     if app.moveTextAndLine == True:
-        app.lineY += app.dLine
-        app.textY += app.dLine
+        app.lineY += 5
+        app.textY += 5
         app.lineMoveCount += 1
-    if app.lineMoveCount >= 40/app.dLine:
+    if app.lineMoveCount >= 40/5:
         app.moveTextAndLine = False
         app.lineMoveCount = 0
     #expands path button to day entry
+    app.timerDelay = 5
     if app.mode == 'main to day':
         x1, y1, x2, y2 = app.height/8, app.height/8, app.width - app.height/8, app.height - app.height/8
         if ((app.dayChX1 >= x1) and (app.dayChY1 >= y1)) and ((
@@ -373,20 +369,20 @@ def mouseMoved(app,event):
         app.isPopUpBox = False
 
 def mousePressed(app, event):
-    if app.mode == 'splash':
-        app.mode = 'main'
-    app.getX = event.x
+    app.getX = event.x  
     app.getY = event.y
     margin = app.height/8
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
-    if app.mode == 'day':
+    if app.mode == 'splash':
+        app.mode = 'main'
+    elif app.mode == 'day':
         #day entry is automatically saved when it is closed using the close button
         if (x2-100 < event.x < x2) and (y1 < event.y < y1+100):
             app.timeLastSaved[app.index] = app.currentDay + ' ' + str(datetime.datetime.now().time())[:5]
             app.mode = 'main'
             saveFile(app)
             app.mode = 'main'
-    if app.mode == 'main':
+    elif app.mode == 'main':
         #if click on weekly summary chart
         if (50 < event.x < app.width/3.5) and (50 < event.y < app.height/3):
             app.mode = 'weekly summary'
@@ -402,15 +398,15 @@ def mousePressed(app, event):
         #open and close the instructions
         if (app.width-220 <= event.x <= app.width-20) and (720 <= event.y <= 770):
             app.isInstructions = not app.isInstructions
-    if app.mode == 'year':
+    elif app.mode == 'year':
         if (app.width/5 < event.x < app.width - 50) and (app.height/3 < event.y < app.height - 50):
             app.mode = 'main'
-    if app.mode == 'weekly summary':
+    elif app.mode == 'weekly summary':
         margin = app.height/12
         x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
         if (x2-60 < event.x < x2) and (y1 < event.y < y1+60): 
             app.mode = 'main'
-    if app.mode == 'daily summary':
+    elif app.mode == 'daily summary':
         if (x2-100 < event.x < x2) and (y1 < event.y < y1+100):
             app.timeLastSaved[app.index] = app.currentDay + ' ' + str(datetime.datetime.now().time())[:5]
             app.mode = 'main'
@@ -435,7 +431,7 @@ def drawDayMode(app, canvas):
     textX = app.width/2
     #draws text above current line
     for n in range(len(app.dayEntry[:-1])):
-        textY = (app.height/8)*2 - app.height/50 + lineSpacing*n
+        textY = app.height/4 + 30 - app.height/50 + lineSpacing*n
         canvas.create_text(textX, textY, text = app.dayEntry[n], 
                                     font = 'Arial 20')
     #draws current line
@@ -450,10 +446,10 @@ def drawDefaultDayText(app, canvas):
     margin = app.height/8
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     canvas.create_text(margin + 240, margin + 30, 
-                            text = f"Entry date: {app.currentDayName}, {app.currentDay}", 
-                            font = 'Arial 30 bold', fill = textColor)
-    canvas.create_text(margin + 170, margin + 60, text = f'Time last saved: {app.timeLastSaved[app.index]}', 
-                            font = 'Arial 20', fill = textColor)   
+                            text = f"Date: {app.currentDayName}, {app.currentDay}", 
+                            font = 'Krungthep 25', fill = textColor)
+    canvas.create_text(margin + 170, margin + 60, text = f'Last saved today: {app.timeLastSaved[app.index][-5:]}', 
+                            font = 'Krungthep 20', fill = textColor)   
 
 #Main mode: draw a sunset and a path leading to it
 def drawMainMode(app, canvas):
@@ -486,7 +482,7 @@ def drawSummaryChart(app, canvas):
     canvas.create_rectangle(50, 50, app.yearChartX, app.yearChartY, 
                             fill = 'white')
     canvas.create_text((50+app.yearChartX)/2, (50+app.yearChartY)/2-10, 
-                        text = 'Click me for', font = 'Krungthep 25')
+                        text = 'Click me for your', font = 'Krungthep 25')
     canvas.create_text((50+app.yearChartX)/2, (50+app.yearChartY)/2+20, 
                         text = 'weekly summary!', font = 'Krungthep 25')
                             
@@ -558,7 +554,7 @@ def drawPath(app, canvas):
             app.height, lineX4+10, 640, fill = app.buttonColor)
 
         #creates entry pop-up
-        canvas.create_rectangle((lineX1-10+lineX4+10)/2-100,400,(lineX1-10+lineX4+10)/2+100,600, fill = 'white', outline = 'white')
+        canvas.create_rectangle((lineX1-10+lineX4+10)/2-100,400,(lineX1-10+lineX4+10)/2+100,600, fill = 'white')
 
 
 def drawBackPath(app,canvas,x1,y1,x2,y2,x3,y3,x4,y4):
@@ -607,6 +603,7 @@ def drawBarChart(app,canvas):
         moodNums = moodDict[day]
         sumOfNums = sum(moodNums)
         x0,x1 = barX, barX+80
+        y3 = 400
         if sumOfNums > 0:
             happy, sad, angry = moodNums[0], moodNums[1], moodNums[2]
             fraction = 200/sumOfNums
@@ -614,6 +611,7 @@ def drawBarChart(app,canvas):
             y1 = y0 + happy*fraction, 
             y2 = y0 + (happy+sad)*fraction, 
             y3 = y0 + (happy+sad+angry)*fraction
+            print(y1,y2,y3)
             canvas.create_rectangle(x0, y0, x1, y1, fill ='yellow', outline = 'white')
             canvas.create_rectangle(x1, y1, x0, y2, fill ='cornflowerBlue', outline = 'white')
             canvas.create_rectangle(x0, y2, x1, y3, fill ='crimson', outline = 'white')
@@ -669,14 +667,14 @@ def drawWordSummary(app,canvas):
         if readFile(f'Entries/{date}-text.txt') != '':
             count += 1
     canvas.create_text(app.width-400,  520, 
-                text = f"Number of journal entries: {count}/7", 
-                font = 'Krungthep 30 bold', fill = 'black')
-    canvas.create_text(app.width-400,  570, 
                 text = f"Most frequently used words: ", 
                 font = 'Krungthep 30 bold', fill = 'black')
-    canvas.create_text(app.width-400,  620, 
+    canvas.create_text(app.width-400,  570, 
                 text = f"{mostFrequentWords}", 
-                font = 'Krungthep 30 bold', fill = 'black')
+                font = 'Krungthep 35 bold', fill = 'black')
+    canvas.create_text(app.width-400,  620, 
+                text = f"Number of journal entries: {count}/7", 
+                font = 'Krungthep 30 bold', fill = 'black')    
     emoji = ''
     if app.weekMainMood == 'happy ': 
         emoji = ':)' 
@@ -685,7 +683,7 @@ def drawWordSummary(app,canvas):
     elif app.weekMainMood == 'angry ': 
         emoji = '>:('     
     canvas.create_text(app.width-400,  670, 
-                text = f"Main mood: {app.weekMainMood} {emoji}", 
+                text = f"Main mood(s): {app.weekMainMood} {emoji}", 
                 font = 'Krungthep 30 bold', fill = 'black')
 
 def drawSplashPage(app, canvas):
@@ -704,7 +702,7 @@ def treeBranch(app, canvas, x1, y1, x2, y2):
     canvas.create_line(x1, y1, x2, y2, width = 8, fill = 'brown')
 
 #recursive function
-#inspiration for fractalTree came from fractalTeddy 
+#heavily modified from fractalTeddy 
 #inspiration for the design of this fractal tree from: http://www.lukaszkroenke.net/projects/1.html
 def fractalTree(app, canvas, x1, y1, x2, y2, length, level, angle = math.radians(20)):
     maxLevel = 6
