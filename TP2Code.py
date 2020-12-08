@@ -95,6 +95,16 @@ def appStarted(app):
                         app.height,
                         -app.width*3 + 80, #x
                         app.height/2+2.5)
+    app.cx1,app.cy1,app.cx2,app.cy2,app.cx3,app.cy3,app.cx4,app.cy4 = (
+                        5520, #x
+                        app.height/2+2.5,                       
+                        1460, #x
+                        app.height,
+                        2300, #x
+                        app.height,
+                        5600, #x
+                        app.height/2+2.5)
+                        
     app.povLeft = app.width
     app.backPath = False
     app.frontPath = True
@@ -290,87 +300,50 @@ def timerFired(app):
 
 def mouseDragged(app, event):
     app.dragging = True
-        
     #how much the cursor is dragged in x-direction
     #can be positive or negative
     xdiff = (app.getX - event.x)
     app.theta -= xdiff/app.hTotalCircum * (math.pi*2)
-    app.theta %= 2*math.pi
-    #print(app.theta)
-    #first quadrant:
-    #app.povLeft %= app.hTotalCircum
-    app.cxSun -= xdiff
-    app.cxSun %= app.hTotalCircum
-    app.x1 -= xdiff
-    app.x4 -= xdiff
-    app.x2 -= xdiff*1/4
-    app.x3 -= xdiff*1/4
-    
-    if ((app.theta >= 0 and app.theta < math.pi/2) or (app.theta >= math.pi*3/2 
-            and app.theta < math.pi*2)):
-        print('1: ', app.theta)
-        app.x1 %= app.hTotalCircum
-        app.x2 %= app.hTotalCircum*1/4
-        app.x3 %= app.hTotalCircum*1/4
-        app.x4 %= app.hTotalCircum 
-        if ((app.theta > 4 and app.theta < 5.5)):
-            app.frontPath = False
-            app.backPath = True
-        else:
-            app.frontPath = True
-            app.backPath = False
+    app.thetaMOD = app.theta % (2*math.pi)
+    print("app.theta= ",app.theta)
+    if (app.thetaMOD >= 0 and app.thetaMOD < math.pi/2): 
+        app.cxSun -= xdiff
+        app.cxSun %= app.hTotalCircum
+        app.frontPath = True
+        app.backPath = False
+        app.x1 -= xdiff
+        app.x4 -= xdiff
+        app.x2 -= xdiff*1/4
+        app.x3 -= xdiff*1/4
+    elif (app.thetaMOD >= math.pi*3/2) and (app.thetaMOD < math.pi*2):
+        app.cxSun -= xdiff
+        app.cxSun %= app.hTotalCircum
+        app.frontPath = True
+        app.backPath = False
+        app.x1 -= xdiff
+        app.x4 -= xdiff
+        app.x2 -= xdiff*1/4
+        app.x3 -= xdiff*1/4
     #second quadrant 
-    if ((app.theta >= math.pi/2 and app.theta < math.pi*3/2)): 
-    #and ((app.theta > 1.5 and app.theta < 4.7)==False)):
-        print('2: ',app.theta)
-        if (app.theta > 3 and app.theta < 4.7):  
-            app.frontPath = True
-            app.backPath = False
+    elif ((app.thetaMOD >= math.pi/2 and app.thetaMOD < math.pi*3/2)): 
+        app.frontPath = False
+        app.backPath = True
+        if app.theta > 0:
+            print("b = ", app.bx1,app.bx4)
+            print(app.bx2, app.bx3)
+            app.bx1 -= xdiff
+            app.bx4 -= xdiff
+            app.bx2 -= xdiff*1/4
+            app.bx3 -= xdiff*1/4
+
         else:
-            print('true')
-            app.frontPath = False
-            app.backPath = True
-        #app.cxSun -= xdiff
-        #TRAPEZIUM OF PATH
-            #shift angles
-        app.bx1 -= xdiff
-        app.bx4 -= xdiff
-        app.bx2 -= xdiff*1/4
-        app.bx3 -= xdiff*1/4
-        app.x1 %= app.hTotalCircum
-        app.x2 %= app.hTotalCircum*1/4
-        app.x3 %= app.hTotalCircum*1/4
-        app.x4 %= app.hTotalCircum 
-        #print('app.x1: ',app.bx1)
-        #print('app.x2: ',app.bx2)
-        #print('app.x3: ',app.bx3)
-        #print('app.x4: ',app.bx4)
-        
-        
-        app.bx1 %= app.hTotalCircum
-        app.bx2 %= app.hTotalCircum*1/4
-        app.bx3 %= app.hTotalCircum*1/4
-        app.bx4 %= app.hTotalCircum    
+            print(app.cx1,app.cx4)
+            print(app.cx2, app.cx3)
+            app.cx1 -= xdiff
+            app.cx4 -= xdiff
+            app.cx2 -= xdiff*1/4
+            app.cx3 -= xdiff*1/4
 
-
-    
-                #app.bx1 %= app.hTotalCircum
-            #app.bx4 %= app.hTotalCircum
-            #shift x
-        #if (app.povLeft < app.width - app.hTotalCircum*0.6 and 
-                    #app.povLeft > app.width - app.hTotalCircum*3/4):
-                #app.bx2 -= xdiff*8
-                #app.bx3 -= xdiff*8
-        # (app.povLeft <= app.width - app.hTotalCircum/4 and 
-                    #app.povLeft > app.width - app.hTotalCircum/4.5):
-                #app.bx2 -= xdiff*8
-                #app.bx3 -= xdiff*8
-
-            #app.bx2 %= app.hTotalCircum
-            #app.bx3 %= app.hTotalCircum
-    #elif (app.povLeft <= app.width - app.hTotalCircum/4 and 
-                #app.povLeft > app.width - app.hTotalCircum*3/4):
-        #app.backPath = False
 
 def mouseReleased(app,event):
     app.dragging = False
@@ -480,7 +453,12 @@ def drawMainMode(app, canvas):
     if app.frontPath == True:
         drawPath(app, canvas)
     if app.backPath == True:
-        drawBackPath(app,canvas) 
+        if app.theta > 0:
+            drawBackPath(app,canvas,app.bx1,app.by1,app.bx2,app.by2,app.bx3,
+                            app.by3,app.bx4,app.by4) 
+        else:
+            drawBackPath(app,canvas,app.cx1,app.cy1,app.cx2,app.cy2,app.cx3,
+                            app.cy3,app.cx4,app.cy4) 
     drawTrees(app, canvas)
     drawDailyButtons(app,canvas)
     drawYearChart(app, canvas)
@@ -576,14 +554,15 @@ def drawPath(app, canvas):
 def dayAnimation(app):
     pass
 
-def drawBackPath(app,canvas):
-    x1,y1,x2,y2,x3,y3,x4,y4 = (app.bx1,app.by1,app.bx2,app.by2,app.bx3,
-                            app.by3,app.bx4,app.by4)
+def drawBackPath(app,canvas,x1,y1,x2,y2,x3,y3,x4,y4):
     canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'peru')
     canvas.create_polygon(x1+15,y1,x2+60,y2,x3-60,y3,x4-15,y4, fill = 'pink')
     canvas.create_polygon(x1+25,y1,x2+80,y2,x3-80,y3,x4-25,y4, fill = 'lightCoral')
     canvas.create_polygon(x1+30,y1,x2+250,y2,x3-250,y3,x4-30,y4, fill = 'lightBlue')
     #draw straight lines across
+    grad1 = -2
+    grad1 = -2
+    
     if ((x3-80-(x4-25))) != 0:
         grad1 = (y2-y1)/(x2+80-(x1+25))
     if ((x3-80-(x4-25))) != 0:
