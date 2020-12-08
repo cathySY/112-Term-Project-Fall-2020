@@ -104,6 +104,9 @@ def appStarted(app):
     app.areLinesMoving = False 
     app.buttonColor = 'cyan'
     app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2 = 597.5,400,797.5,600 #calculated values
+    app.weekMainMood = ''
+    app.xDiffTotal = 0
+    app.xDiffTotalChanged = 0
 
 def resetAll(app):
     app.mode = 'daily summary'
@@ -192,6 +195,8 @@ def keyPressed(app, event):
     if app.mode == 'main':
         if event.key == 'Space':
             app.mode = 'weekly summary'
+            getMostFrequentMood(app)
+
         #moving from one day to another    
         elif event.key == 'Up':
             app.areLinesMoving = True
@@ -280,34 +285,38 @@ def timerFired(app):
             app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2 = 597.5,400,797.5,600
             app.mode = 'day'
 
-
       
 
 
 def mouseDragged(app, event):
     app.dragging = True
-    if ((app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4 == (app.width/2 - 40,
+    '''
+    if     app.x1,app.y1,app.x2,app.y2,app.x3,app.y3,app.x4,app.y4 = (
+                        app.width/2 - 40,
                         app.height/2+2.5, 
                         app.width/5,
                         app.height, 
                         app.width - app.width/5, 
                         app.height,
                         app.width/2 + 40, 
-                        app.height/2+2.5))):
+                        app.height/2+2.5):
         app.mainCentred = True
     app.mainCentred = False
-    
+    '''
+        
     #how much the cursor is dragged in x-direction
-    #positive or negative
+    #can be positive or negative
     xdiff = (app.getX - event.x)
     app.theta += xdiff/app.hTotalCircum * (math.pi*2)
-    #app.theta = abs(app.theta)
     app.theta %= 2*math.pi
+    #print(app.theta)
     #first quadrant:
     #app.povLeft %= app.hTotalCircum
     app.cxSun -= xdiff
+    app.cxSun %= app.hTotalCircum
     if ((app.theta >= 0 and app.theta < math.pi/2) 
         or (app.theta >= math.pi*3/2 and app.theta < math.pi*2)):
+        #print('yes')
         app.backPath = False
         #app.cxSun -= xdiff
         #app.cxSun %= app.hTotalCircum
@@ -315,28 +324,51 @@ def mouseDragged(app, event):
             #shift angles
         app.x1 -= xdiff
         app.x4 -= xdiff
-        #app.x1 %= app.hTotalCircum
-        #app.x4 %= app.hTotalCircum
+        app.x2 -= xdiff*1/4
+        app.x3 -= xdiff*1/4
+        app.x1 %= app.hTotalCircum
+        app.x2 %= app.hTotalCircum*1/4
+        app.x3 %= app.hTotalCircum*1/4
+        app.x4 %= app.hTotalCircum 
+        '''
             #shift x
         #if (app.povLeft < app.width - app.hTotalCircum/5 and 
                 #app.povLeft > app.width - app.hTotalCircum/4):
             #app.x2 -= xdiff*8
             #app.x3 -= xdiff*8
-        app.x2 -= xdiff*1/4
-        app.x3 -= xdiff*1/4
+
             #app.x2 %= app.hTotalCircum
             #app.x3 %= app.hTotalCircum
+            '''
     #second quadrant 
-    if (app.theta >= math.pi/2 and app.theta < math.pi*3/2):
+    elif (app.theta >= math.pi/2 and app.theta < math.pi*3/2):
         app.backPath = True
+        print('app.x4: ',app.x4)
+        print('app.theta: ',app.theta)
         #app.cxSun -= xdiff
         #TRAPEZIUM OF PATH
             #shift angles
         app.x1 -= xdiff
         app.x4 -= xdiff
+
         app.bx1 -= xdiff
         app.bx4 -= xdiff
-            #app.bx1 %= app.hTotalCircum
+        app.x2 -= xdiff*1/4
+        app.x3 -= xdiff*1/4
+        app.bx2 -= xdiff*1/4
+        app.bx3 -= xdiff*1/4
+        app.x1 %= app.hTotalCircum
+        app.x2 %= app.hTotalCircum*1/4
+        app.x3 %= app.hTotalCircum*1/4
+        app.x4 %= app.hTotalCircum 
+        
+        app.bx1 %= app.hTotalCircum
+        app.bx2 %= app.hTotalCircum*1/4
+        app.bx3 %= app.hTotalCircum*1/4
+        app.bx4 %= app.hTotalCircum      
+       
+    
+                #app.bx1 %= app.hTotalCircum
             #app.bx4 %= app.hTotalCircum
             #shift x
         #if (app.povLeft < app.width - app.hTotalCircum*0.6 and 
@@ -347,10 +379,7 @@ def mouseDragged(app, event):
                     #app.povLeft > app.width - app.hTotalCircum/4.5):
                 #app.bx2 -= xdiff*8
                 #app.bx3 -= xdiff*8
-        app.x2 -= xdiff*1/4
-        app.x3 -= xdiff*1/4
-        app.bx2 -= xdiff*1/4
-        app.bx3 -= xdiff*1/4
+
             #app.bx2 %= app.hTotalCircum
             #app.bx3 %= app.hTotalCircum
     #elif (app.povLeft <= app.width - app.hTotalCircum/4 and 
@@ -415,6 +444,11 @@ def mousePressed(app, event):
     if app.mode == 'year':
         if (app.width/5 < event.x < app.width - 50) and (app.height/3 < event.y < app.height - 50):
             app.mode = 'main'
+    if app.mode == 'weekly summary':
+        margin = app.height/12
+        x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
+        if (x2-60 < event.x < x2) and (y1 < event.y < y1+60): 
+            app.mode = 'main'
 
 
 # draws the line under the text
@@ -426,7 +460,7 @@ def drawDayMode(app, canvas):
     margin = app.height/8
     popupColor = 'blanchedAlmond'
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
-    #draw popup
+    #draw background
     canvas.create_rectangle(x1, y1, x2, y2, fill = 'white')
     newLine(app, canvas, margin*2, app.lineY, app.width - margin*2, app.lineY)
     #draw text
@@ -465,8 +499,10 @@ def drawMainMode(app, canvas):
     drawYearChart(app, canvas)
     canvas.create_text(app.width-200,  30, 
                 text = f"{app.currentDayName}, {app.currentDay}", 
-                font = 'Arial 30 bold', fill = 'black')
+                font = 'Krungthep 30 bold', fill = 'black')
 
+
+            
 
 def drawYearChart(app, canvas):
     #DRAW YEAR CHART
@@ -524,7 +560,7 @@ def drawPath(app, canvas):
                          app.y2,app.x3,app.y3,app.x4,app.y4)
     canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'peru')
     canvas.create_polygon(x1+15,y1,x2+60,y2,x3-60,y3,x4-15,y4, fill = 'pink')
-    canvas.create_polygon(x1+25,y1,x2+80,y2,x3-80,y3,x4-25,y4, fill = 'lightCoral')
+    canvas.create_polygon(x1+25,y1,x2+80,y2,x3-80,y3,x4-25,y4, fill = 'peru')
     canvas.create_polygon(x1+30,y1,x2+250,y2,x3-250,y3,x4-30,y4, fill = 'lightBlue')
     #draw straight lines across
     if ((x3-80-(x4-25))) != 0:
@@ -576,10 +612,15 @@ def drawDailyButtons(app,canvas):
                         # app.y2,app.x3-400,app.y3,app.x4*12/11,app.y4*5/3)
     #canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'cyan',)
 
-def drawWeeklySummaryButton(app, canvas):
+def drawSummaryCloseButton(app, canvas):
+    margin = app.height/12
+    x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
+    canvas.create_rectangle(x2-60,y1,x2,y1+60, fill = 'orange')
+
+def drawCloseButton(app, canvas):
     margin = app.height/8
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
-    canvas.create_rectangle(x2-100,y1,x2,y1+100, fill = 'orange')
+    canvas.create_rectangle(x2-60,y1,x2,y1+60, fill = 'orange')
 
 def drawTrees(app,canvas):
     #maybe use recursion to draw a cool design
@@ -627,15 +668,22 @@ def getCellBounds(app, row, col):
 
 #draws bar chart for moods of each day
 def drawBarChart(app,canvas):
+    #draw background
+    margin = app.height/12
+    x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
+    canvas.create_rectangle(x1, y1, x2, y2, fill = 'white')
+    #draw heading
+    canvas.create_text(app.width/2, app.height/12 + 25, text = 'Weekly Summary', font = 'Krungthep 25')
+    #draw bar chart
     moodDict = getMoodNumbersWeek(app)
     barX = 300
     for day in moodDict:
         moodNums = moodDict[day]
         sumOfNums = sum(moodNums)
+        x0,x1 = barX, barX+80
         if sumOfNums > 0:
             happy, sad, angry = moodNums[0], moodNums[1], moodNums[2]
             fraction = 200/sumOfNums
-            x0,x1 = barX, barX+80
             y0 = 200
             y1 = y0 + happy*fraction, 
             y2 = y0 + (happy+sad)*fraction, 
@@ -643,8 +691,61 @@ def drawBarChart(app,canvas):
             canvas.create_rectangle(x0, y0, x1, y1, fill ='yellow', outline = 'white')
             canvas.create_rectangle(x1, y1, x0, y2, fill ='cornflowerBlue', outline = 'white')
             canvas.create_rectangle(x0, y2, x1, y3, fill ='crimson', outline = 'white')
-            canvas.create_text(x0+(x1-x0)/2, y3 + 20, text = day[:3], font = 'Arial 20')
         barX += ((800-80*7)/6 + 80)
+        canvas.create_text((x1+x0)/2, y3 + 20, text = day[:3], font = 'Krungthep 20')
+
+def getMostFrequentMood(app):
+    summation = 0
+    (happyN, sadN, angryN) = (0,0,0)
+    moods = ['happy', 'sad', 'angry']
+    moodDict = getMoodNumbersWeek(app)
+    for day in moodDict:
+        summation += sum(moodDict[day])
+        happyN += moodDict[day][0]
+        sadN += moodDict[day][1]
+        angryN += moodDict[day][2]
+    maxNum = max(happyN, sadN, angryN)
+    for i in range(3):
+        print('y')
+        if ((happyN, sadN, angryN)[i] == maxNum) and (moods[i] not in app.weekMainMood):
+            app.weekMainMood += moods[i]
+            app.weekMainMood += ' '
+
+def drawPiechart(app,canvas):
+    summation = 0
+    (happyN, sadN, angryN) = (0,0,0)
+    moodDict = getMoodNumbersWeek(app)
+    for day in moodDict:
+        summation += sum(moodDict[day])
+        happyN += moodDict[day][0]
+        sadN += moodDict[day][1]
+        angryN += moodDict[day][2]
+    cx, cy, r = (400, 600, app.width/14)
+    canvas.create_arc(cx-r, cy-r, cx+r, cy+r, start=0, 
+                                extent=(happyN/summation)*360, fill='yellow', 
+                                outline = 'white')     
+    canvas.create_arc(cx-r, cy-r, cx+r, cy+r, start=(happyN/summation)*360, 
+                                extent=(sadN/summation)*360, fill='blue',
+                                outline = 'white')                       
+    canvas.create_arc(cx-r, cy-r, cx+r, cy+r, start=((sadN+happyN)/summation)*360, 
+                                extent=(angryN/summation)*360, fill='red',
+                                outline = 'white') 
+
+def drawWordSummary(app,canvas):
+    count = 0
+    time = 0
+    for date in app.weekDates:
+        if readFile(f'Entries/{date}-text.txt') != '':
+            count += 1
+    canvas.create_text(app.width-400,  550, 
+                text = f"Number of journal entries = {count}/7", 
+                font = 'Krungthep 30 bold', fill = 'black')
+    canvas.create_text(app.width-400,  600, 
+                text = f"Total time spent = ", 
+                font = 'Krungthep 30 bold', fill = 'black')
+    canvas.create_text(app.width-400,  650, 
+                text = f"Main mood = {app.weekMainMood}", 
+                font = 'Krungthep 30 bold', fill = 'black')
 
 def drawSplashPage(app, canvas):
         canvas.create_text(app.width/2, 250, text='"Life moves pretty fast.', font='Krungthep 35')
@@ -663,16 +764,20 @@ def redrawAll(app, canvas):
     elif app.mode == 'day':
         drawMainMode(app, canvas)
         drawDayMode(app, canvas)
-        drawWeeklySummaryButton(app, canvas)
+        drawCloseButton(app, canvas)
     elif app.mode == 'main to day':
         drawMainMode(app, canvas)
         canvas.create_rectangle(app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2, fill = 'white')
     elif app.mode == 'daily summary':
         drawMainMode(app, canvas)
         drawWeeklySummary(app, canvas)
-        drawWeeklySummaryButton(app, canvas)
+        drawCloseButton(app, canvas)
     elif app.mode == 'weekly summary':
+        drawMainMode(app, canvas)
         drawBarChart(app,canvas)
+        drawPiechart(app,canvas)
+        drawWordSummary(app,canvas)
+        drawSummaryCloseButton(app, canvas)
     elif app.mode == 'main':
         drawMainMode(app, canvas)
     elif app.mode == 'year' or app.mode == 'main':
