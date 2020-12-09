@@ -1,3 +1,14 @@
+#this file does text analysis for each entry of the day  
+# also does text analysis for the overall week
+
+#################################################
+# EntryAnalysis.py
+#
+# Your name: Yi Sijun Cathy
+# Your andrew id: sijuncay
+#################################################
+
+
 from Usefulwords import *
 #from datetime 
 import datetime

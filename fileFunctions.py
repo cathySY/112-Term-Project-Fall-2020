@@ -1,3 +1,12 @@
+#this file contains the functions to read and write files
+
+#################################################
+# fileFunctions.py
+#
+# Your name: Yi Sijun Cathy
+# Your andrew id: sijuncay
+#################################################
+
 
 #from 112 notes: http://www.cs.cmu.edu/~112/notes/notes-strings.html#basicFileIO
 def readFile(path):
