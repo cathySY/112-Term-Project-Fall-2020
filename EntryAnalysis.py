@@ -81,7 +81,7 @@ def drawWeeklySummary(app, canvas):
     day = dayMoods(app.currentDayName)
     oneDayMoodAnalysis(app,day)
     margin = app.height/8
-    popupColor = 'mintCream'
+    popupColor = 'white'
     x1, y1, x2, y2 = margin, margin, app.width - margin, app.height - margin
     #draw popup
     canvas.create_rectangle(x1, y1, x2, y2, fill = popupColor) 
@@ -118,10 +118,8 @@ def textAnalysis():
         if (word in notUseful) or (word[:-1] in notUseful) :
             combinedText.replace(word, " ")
         elif (word in wordsDict):
-            print(word, '1')
             wordsDict[word] += 1
         elif (word[:-1] in wordsDict):
-            print(word[:-1])
             wordsDict[word[:-1]] += 1
         else:
             if (word[-1] in string.punctuation) and (len(word) > 1):
@@ -160,4 +158,3 @@ def getMostFrequentWords(dictionary):
 def overallAnalysis():
     wordsDict = textAnalysis()
     return getMostFrequentWords(wordsDict)
-

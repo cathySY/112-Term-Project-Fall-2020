@@ -35,8 +35,10 @@ def appStarted(app):
     app.mode = 'splash'
     app.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday']
-    app.skyColors = ['peachPuff','moccasin','papayaWhip','lemonChiffon','lightYellow','aliceBlue','lightCyan']
-    app.sunColors = ['darkOrange', 'darkOrange', 'orange', 'orange', 'moccasin','lightGoldenrodYellow','lightCyan']
+    app.skyColors = ['peachPuff','papayaWhip','lemonChiffon','aliceBlue',
+                    'paleTurquoise','skyBlue','thistle']
+    app.sunColors = ['darkOrange', 'orange', 'peachPuff', 'lightYellow', 
+                    'paleTurquoise','skyBlue','thistle']
     app.weekDates = getWeek()
     app.currentDay = str(datetime.datetime.now().date())
     app.currentDayName = calendar.day_name[datetime.datetime.now().date().weekday()]
@@ -60,7 +62,8 @@ def appStarted(app):
     app.hTotalCircum = 2*math.pi*app.hR*10
     app.hTotalArea = math.pi * (app.hR)**2
     ###
-    app.cxSun, app.cySun, app.rSun = (app.width/2, app.height/2-3, app.width/10)
+    app.cxSun, app.cySun = (app.width/2, app.height/2-3)
+    app.rSun = app.width/15 + 40*app.index
     app.dMove = 150
     app.dragging = False
     app.getX = 0
@@ -108,18 +111,44 @@ def appStarted(app):
     app.xDiffTotal = 0
     app.xDiffTotalChanged = 0
     app.treeLevel = 0
-    app.trunkX, app.trunkY1, app.trunkY2 = app.cxSun-200, app.cySun+120, app.cySun+60
+    app.trunkX, app.trunkY1, app.trunkY2 = app.cxSun+200, app.cySun+120, app.cySun+60
     app.treeSize = 50
     app.isInstructions = False
+    app.cloudx = app.x1
     #Lined Notebook Paper from: https://allfreedesigns.com/lined-paper-texture/
     app.imageSplash1 = app.loadImage('Images/lined-paper-texture-27.jpg')
     #Pastel wallpaper from: https://www.itl.cat/wallview/ihwbJbb_pastel-wallpaper-4k/
     app.imageSplash3 = app.loadImage('Images/Final splash bg.jpg')
     app.imageSplash2 = app.scaleImage(app.imageSplash3, 1.2/3)
-
     #SIMPLE VECTOR GEOMETRIC BACKGROUND WHITE from: https://onlyvectorbackgrounds.com/vector-geometric-background-white/
     app.weekly1 = app.loadImage('Images/geometric bg.png')
     app.weekly = app.scaleImage(app.weekly1, 1.85/3)
+    #Cumulus Cloud from: https://www.clipartkey.com/view/wRmxTT_clipart-cloud-cumulus-cloud-transparent-background-clipart-transparent/
+    app.cloudA = app.loadImage('Images/cloud2.png')
+    app.cloud2 = app.scaleImage(app.cloudA, 1/15)
+    #Clouds from: https://www.clipartkey.com/view/wRmxTT_clipart-cloud-cumulus-cloud-transparent-background-clipart-transparent/
+    app.cloudB = app.loadImage('Images/cloud3.png')
+    app.scale = 0.1*app.index
+    app.cloud1 = app.scaleImage(app.cloudB, (0.5+app.scale)/15)
+    app.cloud1small = app.scaleImage(app.cloudB, (0.5+app.scale)/21)
+
+    #tree from: https://pngio.com/images/png-a1066587.html
+    app.tree1orig = app.loadImage('Images/purpletree2.png')
+    app.tree1z = app.scaleImage(app.tree1orig, 0.5/5)
+    app.tree1a = app.scaleImage(app.tree1orig, 1/5)
+    app.tree1c = app.scaleImage(app.tree1orig, 2/5)
+
+    #tree from: https://www.pngitem.com/middle/hRxiiiR_cherry-pink-tree-painted-tree-purple-portadas-de/
+    app.tree2orig = app.loadImage('Images/purpletree1.png')
+    app.tree2z = app.scaleImage(app.tree2orig, 0.5/5)
+    app.tree2a = app.scaleImage(app.tree2orig, 1/5)
+    app.tree2c = app.scaleImage(app.tree2orig, 2/5)
+
+    #rainbow from: https://gallery.yopriceville.com/Free-Clipart-Pictures/Rainbows-PNG/Transparent_Rainbow_PNG_Free_Clip_Art_Image#.X9CjxukzY6g
+    app.rainbowOrig = app.loadImage('Images/rainbow.png')
+    app.rainbow = app.scaleImage(app.rainbowOrig, 1/20)
+
+    
 
 def resetAll(app):
     app.mode = 'main'
@@ -225,7 +254,7 @@ def keyPressed(app, event):
             #if index is possible
             if (app.index >= 0) and (app.index <= len(app.weekDates)-2):
                 #move the trees
-                app.trunkX -= 35
+                app.trunkX += 35
                 app.trunkY1 += 30
                 app.trunkY2 += 30
                 app.treeSize += 20
@@ -238,9 +267,13 @@ def keyPressed(app, event):
                 app.dayEntry = splitString(app,app.fileContents)
                 #sun gets bigger
                 app.rSun += 30
+                #clouds get bigger
+                app.scale = 0.1*app.index
+                app.cloud1 = app.scaleImage(app.cloudB, (0.5+app.scale)/15)
+                app.cloud1small = app.scaleImage(app.cloudB, (0.5+app.scale)/21)
         elif event.key == 'Down':
             if (app.index >= 1) and (app.index <= len(app.weekDates)-1):
-                app.trunkX += 35
+                app.trunkX -= 35
                 app.trunkY1 -= 30
                 app.trunkY2 -= 30
                 app.treeSize -= 20
@@ -251,6 +284,10 @@ def keyPressed(app, event):
                 app.dayEntry = splitString(app,app.fileContents)
                 #sun gets smaller
                 app.rSun += -30
+                #clouds get smaller
+                app.scale = 0.1*app.index
+                app.cloud1 = app.scaleImage(app.cloudB, (0.5+app.scale)/15)
+                app.cloud1small = app.scaleImage(app.cloudB, (0.5+app.scale)/21)
             
     elif app.mode == 'day':
         if event.key == 'Right':
@@ -291,6 +328,7 @@ def saveFile(app):
 
 def timerFired(app):
     app.timerDelay = 10
+    app.cloudx += 3
     #moves text and line downwards at the same pace until a new line is reached
     if app.moveTextAndLine == True:
         app.lineY += 5
@@ -325,6 +363,8 @@ def mouseDragged(app, event):
     #can be positive or negative
     xdiff = (app.getX - event.x)
     app.theta -= xdiff/app.hTotalCircum * (math.pi*2)
+    app.cloudx -= xdiff
+    app.cloudx %= app.hTotalCircum
     app.thetaMOD = app.theta % (2*math.pi)
     #front half of circle
     if (app.thetaMOD >= 0 and app.thetaMOD < math.pi/2) or ((app.thetaMOD >= math.pi*3/2) and (app.thetaMOD < math.pi*2)): 
@@ -456,6 +496,7 @@ def drawDefaultDayText(app, canvas):
 #Main mode: draw a sunset and a path leading to it
 def drawMainMode(app, canvas):
     drawHorizonAndSun(app, canvas)
+    drawClouds(app, canvas)
     if app.frontPath == True:
         drawPath(app, canvas)
     if app.backPath == True:
@@ -472,11 +513,42 @@ def drawMainMode(app, canvas):
     canvas.create_text(app.width-200,  80, 
                 text = f"{app.currentDayName}, {app.currentDay}", 
                 font = 'Krungthep 30 ', fill = 'black')
+
+    drawLandTrees(app,canvas)
     
     #draw fractal trees
-    fractalTree(app, canvas, app.trunkX, app.trunkY1, app.trunkX, app.trunkY2, app.treeSize, 0)
-    fractalTree(app, canvas, app.trunkX+50, app.trunkY1-50, app.trunkX+50, app.trunkY2-50, app.treeSize, 0)
+    fractalTree(app, canvas, app.trunkX+50, app.trunkY1, app.trunkX+50, app.trunkY2, app.treeSize, 0)
+    fractalTree(app, canvas, app.trunkX, app.trunkY1-50, app.trunkX, app.trunkY2-50, app.treeSize, 0)
 
+def drawClouds(app,canvas):
+    #clouds wrap around
+    canvas.create_image((app.cloudx-500)%(app.width+100), 100, image=ImageTk.PhotoImage(app.cloud1small))
+    canvas.create_image((app.cloudx-50)%(app.width+100), 250, image=ImageTk.PhotoImage(app.cloud1))
+    canvas.create_image((app.cloudx+500)%(app.width+100), 200, image=ImageTk.PhotoImage(app.cloud1))
+    #canvas.create_image(app.cloudx, 200, image=ImageTk.PhotoImage(app.cloud2))
+            
+def drawLandTrees(app,canvas):
+    canvas.create_image(app.x1-200, 420, image=ImageTk.PhotoImage(app.tree1z))
+    canvas.create_image(app.x1-500, 450, image=ImageTk.PhotoImage(app.tree1a)) 
+    canvas.create_image(app.x1-1200-2200, 400, image=ImageTk.PhotoImage(app.tree1a))    
+    canvas.create_image(app.x1-1800-1000, 550, image=ImageTk.PhotoImage(app.tree1c)) 
+
+    canvas.create_image(app.x1-200-1300, 420, image=ImageTk.PhotoImage(app.tree2z))
+    canvas.create_image(app.x1-500-2000, 450, image=ImageTk.PhotoImage(app.tree2a))
+    canvas.create_image(app.x1-1200-2500, 400, image=ImageTk.PhotoImage(app.tree2a))    
+    canvas.create_image(app.x1-1800-2800, 550, image=ImageTk.PhotoImage(app.tree2c))    
+
+    canvas.create_image(app.x1+200+1300, 420, image=ImageTk.PhotoImage(app.tree2z))
+    canvas.create_image(app.x1+500+2000, 450, image=ImageTk.PhotoImage(app.tree2a))
+    canvas.create_image(app.x1+1200+2500, 400, image=ImageTk.PhotoImage(app.tree2a))    
+    canvas.create_image(app.x1+1800+2800, 550, image=ImageTk.PhotoImage(app.tree2c))  
+
+    # canvas.create_image(app.x1-200-2800, 420, image=ImageTk.PhotoImage(app.tree1z))
+    # canvas.create_image(app.x1-500-2800, 450, image=ImageTk.PhotoImage(app.tree1a))
+    # canvas.create_image(app.x1-1200-2800, 400, image=ImageTk.PhotoImage(app.tree1a))    
+    # canvas.create_image(app.x1-1800-2800, 550, image=ImageTk.PhotoImage(app.tree1c))    
+
+    
             
 
 def drawSummaryChart(app, canvas):
@@ -488,6 +560,7 @@ def drawSummaryChart(app, canvas):
     canvas.create_text((50+app.yearChartX)/2, (50+app.yearChartY)/2+20, 
                         text = 'weekly summary!', font = 'Krungthep 25')
                             
+
 
 def drawHorizonAndSun(app, canvas):
     drawHorizon(app, canvas)
@@ -533,7 +606,7 @@ def drawPath(app, canvas):
                          app.y2,app.x3,app.y3,app.x4,app.y4)
     canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'peru')
     canvas.create_polygon(x1+15,y1,x2+60,y2,x3-60,y3,x4-15,y4, fill = 'pink')
-    canvas.create_polygon(x1+25,y1,x2+80,y2,x3-80,y3,x4-25,y4, fill = 'peru')
+    canvas.create_polygon(x1+25,y1,x2+80,y2,x3-80,y3,x4-25,y4, fill = 'plum')
     canvas.create_polygon(x1+30,y1,x2+250,y2,x3-250,y3,x4-30,y4, fill = 'lightBlue')
     #draw straight lines across
     if ((x3-80-(x4-25))) != 0:
@@ -543,7 +616,7 @@ def drawPath(app, canvas):
     for y in [650,520,450]:
         lineX1 = (1/grad1)*(y-y1)+(x1+25)
         lineX2 = (1/grad2)*(y-y3)+(x3-80)
-        canvas.create_line(lineX1, y, lineX2, y, width = 5, fill = 'peru')
+        canvas.create_line(lineX1, y, lineX2, y, width = 5, fill = 'plum')
     #if mouse hovers over the trapezium, it changes color
     if app.isPopUpBox == True:
         grad1 = (y2-y1)/(x2+250-(x1+30))
@@ -560,6 +633,10 @@ def drawPath(app, canvas):
 
 
 def drawBackPath(app,canvas,x1,y1,x2,y2,x3,y3,x4,y4):
+    if app.theta > 0:
+        canvas.create_image((app.bx1+app.bx4)/2, 300, image=ImageTk.PhotoImage(app.rainbow))
+    else:
+        canvas.create_image((app.cx1+app.cx4)/2, 300, image=ImageTk.PhotoImage(app.rainbow))
     canvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4, fill = 'peru')
     canvas.create_polygon(x1+15,y1,x2+60,y2,x3-60,y3,x4-15,y4, fill = 'pink')
     canvas.create_polygon(x1+25,y1,x2+80,y2,x3-80,y3,x4-25,y4, fill = 'lightCoral')
@@ -598,6 +675,11 @@ def drawBarChart(app,canvas):
     canvas.create_image(app.width/2, app.height/2, image=ImageTk.PhotoImage(app.weekly))
     #draw heading
     canvas.create_text(app.width/2, app.height/12 + 40, text = 'Weekly Summary', font = 'Krungthep 40')
+    #draw key for bar chart
+    canvas.create_text(200, 260, text = 'KEY', font = 'Krungthep 18')
+    canvas.create_text(200, 280, text = 'yellow: happy', font = 'Krungthep 15')
+    canvas.create_text(200, 300, text = 'blue: sad', font = 'Krungthep 15')
+    canvas.create_text(200, 320, text = 'red: angry', font = 'Krungthep 15')
     #draw bar chart
     moodDict = getMoodNumbersWeek(app)
     barX = 300
@@ -647,7 +729,7 @@ def drawPiechart(app,canvas):
         happyN += moodDict[day][0]
         sadN += moodDict[day][1]
         angryN += moodDict[day][2]
-    cx, cy, r = (550, 600, app.width/14)
+    cx, cy, r = (490, 600, app.width/14)
     canvas.create_arc(cx-r, cy-r, cx+r, cy+r, start=0, 
                                 extent=(happyN/summation)*360, fill='yellow', 
                                 outline = 'black')     
@@ -657,8 +739,8 @@ def drawPiechart(app,canvas):
     canvas.create_arc(cx-r, cy-r, cx+r, cy+r, start=((sadN+happyN)/summation)*360, 
                                 extent=(angryN/summation)*360, fill='red',
                                 outline = 'black') 
-    canvas.create_text(300, 590, text = 'mood distribution', font = 'Krungthep 20')
-    canvas.create_text(300, 620, text = 'for the entire week', font = 'Krungthep 20')
+    canvas.create_text(230, 590, text = 'mood distribution', font = 'Krungthep 18')
+    canvas.create_text(230, 620, text = 'for the entire week', font = 'Krungthep 18')
 
 def drawWordSummary(app,canvas):
     mostFrequentWords = overallAnalysis()
@@ -672,7 +754,7 @@ def drawWordSummary(app,canvas):
                 font = 'Krungthep 30 bold', fill = 'black')
     canvas.create_text(app.width-400,  570, 
                 text = f"{mostFrequentWords}", 
-                font = 'Krungthep 35 bold', fill = 'black')
+                font = 'Krungthep 25 bold', fill = 'black')
     canvas.create_text(app.width-400,  620, 
                 text = f"Number of journal entries: {count}/7", 
                 font = 'Krungthep 30 bold', fill = 'black')    
