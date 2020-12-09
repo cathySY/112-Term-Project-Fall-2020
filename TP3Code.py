@@ -123,15 +123,11 @@ def appStarted(app):
     #SIMPLE VECTOR GEOMETRIC BACKGROUND WHITE from: https://onlyvectorbackgrounds.com/vector-geometric-background-white/
     app.weekly1 = app.loadImage('Images/geometric bg.png')
     app.weekly = app.scaleImage(app.weekly1, 1.85/3)
-    #Cumulus Cloud from: https://www.clipartkey.com/view/wRmxTT_clipart-cloud-cumulus-cloud-transparent-background-clipart-transparent/
-    app.cloudA = app.loadImage('Images/cloud2.png')
-    app.cloud2 = app.scaleImage(app.cloudA, 1/15)
-    #Clouds from: https://www.clipartkey.com/view/wRmxTT_clipart-cloud-cumulus-cloud-transparent-background-clipart-transparent/
+    #Clouds from: https://gallery.yopriceville.com/Free-Clipart-Pictures/Cloud-PNG/Clouds_PNG_Transparent_Clip_Art_Image#.X9CS5ekzZZ0
     app.cloudB = app.loadImage('Images/cloud3.png')
     app.scale = 0.1*app.index
     app.cloud1 = app.scaleImage(app.cloudB, (0.5+app.scale)/15)
     app.cloud1small = app.scaleImage(app.cloudB, (0.5+app.scale)/21)
-
     #tree from: https://pngio.com/images/png-a1066587.html
     app.tree1orig = app.loadImage('Images/purpletree2.png')
     app.tree1z = app.scaleImage(app.tree1orig, 0.5/5)
@@ -148,10 +144,10 @@ def appStarted(app):
     app.rainbowOrig = app.loadImage('Images/rainbow.png')
     app.rainbow = app.scaleImage(app.rainbowOrig, 1/20)
 
-    
 
 def resetAll(app):
     app.mode = 'main'
+    app.weekDates = getWeek()
     app.currentDay = str(datetime.datetime.now().date())
     app.currentDayName = calendar.day_name[datetime.datetime.now().date().weekday()]
     app.index = app.weekDates.index(app.currentDay)
@@ -159,8 +155,8 @@ def resetAll(app):
     app.fileContents = readFile(f'Entries/{app.currentDay}-text.txt')
     app.dayEntry = splitString(app,app.fileContents)
     app.letterPosition = [app.height/8*2 + 20]
-    app.textY = (app.height/8)*2 - app.height/50
-    app.lineY = (app.height/8)*2
+    app.textY = app.height/4+30 - app.height/50 + 40*(len(app.dayEntry)-1)
+    app.lineY = app.height/4+30 + 40*(len(app.dayEntry)-1)
     app.lineMoveCount = 0
     app.dLine = 5
     app.moveTextAndLine = False
@@ -168,13 +164,8 @@ def resetAll(app):
     app.yearChartX, app.yearChartY = app.width/3.5, app.height/3
     app.rows = 3
     app.cols = 4
-    ### Calculations for rotation
-    app.hDistCovered = 0
-    app.hR, app.hFrameCircum = app.height/2, app.width
-    app.hTotalCircum = 2*math.pi*app.hR*10
-    app.hTotalArea = math.pi * (app.hR)**2
-    ###
-    app.cxSun, app.cySun, app.rSun = (app.width/2, app.height/2-3, app.width/10)
+    app.cxSun, app.cySun = (app.width/2, app.height/2-3)
+    app.rSun = app.width/15 + 40*app.index
     app.dMove = 150
     app.dragging = False
     app.getX = 0
@@ -213,18 +204,17 @@ def resetAll(app):
     app.frontPath = True
     app.theta = 0
     app.mainCentred = True
-    app.timeLastSaved = ['']*7
     app.isPopUpBox = False
     app.areLinesMoving = False 
     app.buttonColor = 'cyan'
     app.dayChX1, app.dayChY1, app.dayChX2, app.dayChY2 = 597.5,400,797.5,600 #calculated values
-    app.weekMainMood = ''
     app.xDiffTotal = 0
     app.xDiffTotalChanged = 0
     app.treeLevel = 0
-    app.trunkX, app.trunkY1, app.trunkY2 = app.cxSun-200, app.cySun+120, app.cySun+60
+    app.trunkX, app.trunkY1, app.trunkY2 = app.cxSun+200, app.cySun+120, app.cySun+60
     app.treeSize = 50
     app.isInstructions = False
+    app.cloudx = app.x1
 
 #splits a long string into a list of short strings of equal lengths
 def splitString(app,string):
